@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "scenario": "dynamic_ios",
+    "prompt": "目标iOS App正在运行且注册状态要保留；只有设计任务，不执行Hook。已定位原生签名函数、Keychain访问、App Attest异步回调；本项目Frida17.15.3在27045且没有ObjC bridge。请设计最低侵入证据链和challenge/keyID/assertion关联，不能用ObjC.classes、不重启/清数据/重放，也不要导出私钥。",
+    "expected": "先保留已运行进程和登记状态，设计原生边界与真实网络提交点，按task/request/keyID和回调证据关联异步不能仅靠时间；沿本机venv/27045/无ObjC bridge事实，用原生或ObjC runtime C API，不用ObjC.classes。标实际支持/未触发/未知，私钥导出与调用分离，不额外生成key或重复消费challenge/assertion，不重启/清数据，原始证据受控且报告脱敏。"
+  },
+  {
+    "id": 2,
+    "scenario": "纯原生工具链边界",
+    "prompt": "本机魔改Frida没有ObjC bridge，一份使用ObjC.classes的脚本失败。能据此说目标反Frida吗？当前只设计排查，不重启目标或重建隧道。",
+    "expected": "先对工具链/API兼容性和已知目标验证，不能将ObjC不存在归为反检测。按项目venv、27045、进程身份和现有状态选只读取证；确需hook已知selector时用受控ObjC runtime C API或原生符号，缺符号/回调保留未知，不无条件spawn或kill。"
+  },
+  {
+    "id": 3,
+    "scenario": "一次性状态与密钥调用",
+    "prompt": "为了采三组AppAttest输出，有人准备连着generateKey、attestKey，再删Keychain重装；SecKey私钥导不出来就想做全Keychain转储。请只评审取证方案。",
+    "expected": "否定为凑样本批量生成key/消费challenge和破坏状态；三组逐字节用于确定性算法，不要求状态型证明同字节。观察keyID/公钥/调用参数和异步完成/持久化消费者，硬件私钥不可导出不等于不能调用；不批量转储秘密，已有材料优先，完整绑定和服务端判官交协议技能。"
+  }
+]

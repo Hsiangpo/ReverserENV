@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "scenario": "典型场景：单 skill 优化",
+    "prompt": "用 darwin-skill 优化 huashu-xxx 这个 skill",
+    "expected": "固定真源与脏树 → 设计或复用 2-3 个现实 test prompts → 建立静态和行为 baseline → 独立 judge 评 9 维 → 单个可归因问题块修改 → 相同测试回归 → 只保留不退步且有行为改善的版本。结果卡片、提交和记忆更新只在用户明确要求时执行。"
+  },
+  {
+    "id": 2,
+    "scenario": "典型场景：全量评估",
+    "prompt": "评估所有 skills 的质量",
+    "expected": "扫描所有 SKILL.md 的发现、边界、工作流、资源、失败恢复、精简度与 runtime 漂移，复用现实 prompts 做 with-skill/baseline 独立行为评审，按 9 维输出证据与短板；仅评估请求不能进入修改循环。"
+  },
+  {
+    "id": 3,
+    "scenario": "歧义/失败场景",
+    "prompt": "我想让你帮我把这个 skill 改得更好一点",
+    "expected": "从上下文发现目标 Skill/真源；只有范围无法可靠推断时才询问。检查 git、用户改动、现有 tests/results 和权限边界，设计现实 prompt 并建立 baseline；异常按恢复表处理，不静默跳过或覆盖。"
+  }
+]

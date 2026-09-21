@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "scenario": "典型场景：反 Frida 层级与注入向量选择",
+    "prompt": "爱加密目标 attach 会报 closed 并让 frida-server 崩，spawn 又在启动期 SIGKILL，应该怎么继续？",
+    "expected": "先对无防护 App 自证工具链并核对客户端/server/ABI；目标失败可复现后按 L3 watchdog 分支选择 ZygiskFrida 或 Root dump 零注入。若 Zygisk 也影响系统则升级为 L3b，只允许零注入，不能继续高侵入度试错。"
+  },
+  {
+    "id": 2,
+    "scenario": "失败场景：Java Hook 成功但业务静默降级",
+    "prompt": "Ele.me 的 Java.use().implementation 安装成功、App 也不崩，但列表突然不出数据，是什么问题？",
+    "expected": "根据 quicksparrow ART-hook 检测分支，撤掉 Java/ART Hook，改用 Native Hook、ANet/libtnet/libxquic 入口或 eCapture；不能把 Hook 安装成功当作可用，也不能先归因网络或账号。"
+  },
+  {
+    "id": 3,
+    "scenario": "复杂场景：设备注册 JNI 取证与 CFF 代码页 Hook 崩溃",
+    "prompt": "设备注册通过 RegisterNatives 动态绑定 JNI，CFF 函数一 attach 就闪退；目前有 Keystore alias、一次性 Challenge 和旧 device_token。我想清数据或重装凑三组输出，密钥导不出是否就没法继续？怎样得到可复核映射和 trace？",
+    "expected": "先用有数量上限的 register_natives 模板逐项记录 method name、JNI signature、function pointer、module+offset，坏指针逐项报错而不让整表失效。代码页 Hook 崩溃后停止改页，改用 Stalker 或运行期快照；偏移与静态反汇编核对。沿最窄边界关联 Challenge/alias/公钥登记/attestation/凭证读写与 Java/JNI/native/network 输入输出，记录原始请求响应锚点、时间来源、serial、App 版本、session/PID 和脱敏账号关联。先读取已有状态，不用清数据、重装、刷机、改代理或换账号制造样本，不反复消耗一次性 Challenge/token；三组对拍只约束确定性算法。密钥不可导出不等于无法调用，记录 alias、授权条件及签名结果，不采集私钥/账号秘密，共享模板只用可关联的脱敏标识。完整谱系、状态机、拒绝归因和离线算法交 protocol-signature-reverser，缺失阶段保留未知，Hook 命中不等于设备注册成功。"
+  }
+]

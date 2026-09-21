@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "scenario": "Assertion覆盖与乱序",
+    "prompt": "attestation结构和证书链检查都通过；客户端只把随机challenge放进clientDataHash。后续并发两次assertion乱序到达，业务body变化却未纳入摘要。能说请求全字段受保护并按接收顺序判重放吗？",
+    "expected": "首次证明和后续assertion分开；应追精确输入覆盖及AppID/公钥/挑战/counter验证，不能推body受保护。并发/乱序和业务幂等需明确状态设计，不能放宽counter绕过验证或机械按接收时间判生成顺序；仅设计，不发请求。"
+  },
+  {
+    "id": 2,
+    "scenario": "Vendor与存储组混同",
+    "prompt": "仅卸载一个App后IDFV没有变，Keychain还存着旧key_id；entitlements有App Group，于是开发者断定所有同组App共享Keychain，旧AppAttest密钥也永久有效。请分析已有事实和缺口。",
+    "expected": "核同Vendor其他App与IDFV范围，单次结果不推永久性；App Group与keychain-access-groups分开。Keychain残留ID不证明AppAttest底层key存在，其重装/迁移/备份恢复生命周期独立；追访问组、accessible/synchronizable、真实调用，不删状态验证。"
+  },
+  {
+    "id": 3,
+    "scenario": "受管设备证明边界",
+    "prompt": "普通消费App想使用Managed Device Attestation作为所有用户注册前置条件，并让本项目旧设备直接跑；只给方案审查。",
+    "expected": "先区分MDM/ACME受管条件与消费App，查实际系统/硬件支持；本项目旧设备基线不能默认支持，不因此自动升级/擦除/注册管理配置。按实际需求选择可用平台能力并保留支持错误与业务风险区别，不虚构通用设备UDID接口。"
+  }
+]

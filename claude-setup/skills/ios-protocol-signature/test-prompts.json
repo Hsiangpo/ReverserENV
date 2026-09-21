@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "scenario": "enrollment_lineage",
+    "prompt": "只分析本地现有材料：iOS App首启 /bootstrap 下发challenge，/register 返回device_id和opaque token，/login返回access_token；代码出现IDFV、Keychain access group、AppGroup配置和key_id。已有卸载重装前后样本只表明IDFV相同、device_id相同，未观察Keychain读写和TTL。请给设备注册字段谱系草表、生命周期缺口和最小取证设计，不能操作设备或联网。",
+    "expected": "区分安装、IDFV、Keychain状态、密钥/证明、服务器设备与账号会话；上游下发不能自动填透传。按生产者、存储、消费者、TTL/刷新/撤销建表，已有重装样本不证明永久ID或Keychain/AppAttest key存活。AppGroup容器与Keychain访问组分开，未知留空，只给本地最小取证设计。"
+  },
+  {
+    "id": 2,
+    "scenario": "apple_attestation",
+    "prompt": "只评审设计：开发者把DeviceCheck token当永久UDID，将两个bit当完整设备风险画像，又认为App Attest每个请求都会向Apple申请证明，Keychain里的key_id重装后还能用，Secure Enclave的私钥可以导出到Python。现有材料只有可解析attestation对象，没有服务端验链和请求绑定证据。请区分各对象和缺证，给诚实交付边界，不做在线动作。",
+    "expected": "DeviceCheck临时token与两个bit不是永久UDID或完整画像，也不同于开发者服务端JWT。AppAttest先attest建立公钥信任再assertion绑定请求，核clientDataHash/challenge/链/AppID/counter，重装/恢复/迁移后旧keyID不代表key有效。普通Keychain与SecureEnclave私钥分开，不可导出不等于不可调用；结构可解析不等于服务端验证，不以平台依赖提前结束其他本地分析。"
+  },
+  {
+    "id": 3,
+    "scenario": "risk_transport",
+    "prompt": "已有日志：同一iOS注册请求同字节已发3次，HTTP200且code=0，后端却没设备记录；原App此前成功。JA4相同，代理没抓到report，但可能漏Network.framework/QUIC流量。请分层判因并给能区分假设的最小下一步；不发第4次、不换网络或账号。",
+    "expected": "同字节3次已耗尽，不发第4次；HTTP/code与后端注册效果分离，相同JA4不代表完整传输相同，代理没有report不证明未发送。保持2–3个字段、状态、捕获/传输候选，以已有原始字节/时序/到达层和观察覆盖做最小离线差分，列反证、停止与恢复，不自动换网/账号。"
+  }
+]

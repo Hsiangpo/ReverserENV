@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "scenario": "recon_ios",
+    "prompt": "只有已解密IPA、entitlements和旧启动日志，发现DCAppAttestService、DCDevice、identifierForVendor、SecItemCopyMatching、WKWebView和nw_connection_send。请只做本地注册入口与上游下游侦察设计，区分AppGroup和Keychain access group；不要连接设备、删Keychain或启动App。",
+    "expected": "基于IPA/hash/Mach-O UUID/架构、bundle/Team/AppID与entitlements定位真实调用；区分AppGroup与Keychain access group、IDFV/IDFA、AppAttest与DeviceCheck、公钥注册/凭证刷新解绑和URLSession/Network.framework/WKWebView路径。API/域名只候选，未观察保留未知，完整谱系交ios-protocol-signature，只有需要运行证据才交ios-dynamic，不连设备。"
+  },
+  {
+    "id": 2,
+    "scenario": "加密入口与静态证据边界",
+    "prompt": "只有App Store IPA，cryptid仍为1，字符串里有CCCrypt和某风险SDK域名。能直接宣布签名入口与注册算法已经找到吗？只给本地侦察路径，不启动App。",
+    "expected": "固定样本hash、Mach-O架构/UUID和加密区间，命中只候选；真实加密代码静态缺口交ios-unpack，不把cryptid字段修改当解密。已有可读元数据/entitlements继续分析，禁止访问SDK域名或为缺样本自动启动业务App。"
+  },
+  {
+    "id": 3,
+    "scenario": "网络覆盖与证明误读",
+    "prompt": "IPA同时含NSURLSession、nw_connection_send和WKWebView，只在代理看到一个请求。我能判定没有设备注册/风险上报，或没拿到AppAttest就是越狱吗？",
+    "expected": "区分真实调用链与库字符串，记录各进程/后台任务/连接观察点和盲区；代理未抓到不等于未发送。平台不支持、错误、未调用和服务端未验收分开，不能由缺token推出越狱，动态补证由ios-dynamic按当前范围执行。"
+  }
+]

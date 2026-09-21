@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "scenario": "典型场景：记录新失败模式并进化单个 skill",
+    "prompt": "刚完成一个新 APP，发现现有 android-dynamic 对一种新的反注入失败没有覆盖，帮我进化技能。",
+    "expected": "先读取 CLAUDE.md、目标真源、实现与现实 test prompts，固定脏树和改前测试；把新失败编码为触发、一线、仍失败与恢复，并只修改可归因问题块。至少一名独立 judge 复评相同 prompts，回归不退步且行为证据改善才保留。未明确要求时不自动写 memory。"
+  },
+  {
+    "id": 2,
+    "scenario": "复杂场景：脏工作树中的全量进化",
+    "prompt": "仓库里有很多未提交业务改动，请全量优化四个逆向 skills，但不要弄丢我的东西。",
+    "expected": "先限定真源和脏树边界，不 stash、reset、整树覆盖或独立修镜像；用户已批准整轮时可批量推进，但每项仍记录 diff、行为和回归。只改 .claude 真源，完成后同步唯一 .agents 镜像，并验证 hash、预期路径替换、运行时名称唯一和 UTF-8 no-BOM；不得重建 .qoder/.zcode 等第二 Skill 根。"
+  },
+  {
+    "id": 3,
+    "scenario": "联动场景：skill 与 MCP 契约同时变化",
+    "prompt": "我给 frida-orchestrator-mcp 新增了一个必填环境变量，也要让所有逆向 skills 正确使用它。",
+    "expected": "先改根 .mcp.json 并验证实现真实读取该变量，再保留 Codex trust 块同步 Cursor、Codex、Grok 项目镜像；ZCode/Qoder 用户配置只做显式核对。随后只在需要的权威 SKILL.md 更新契约，运行 MCP 离线测试和跨 skill 一致性检查，最后同步派生 skills。"
+  }
+]

@@ -1,0 +1,217 @@
+#!/usr/bin/env bash
+# newrev [--ios|--android] <项目名> [目标URL]     新建逆向项目（CLAUDE.md/AGENTS.md/骨架/venv）
+# newrev --here [--ios|--android] [目标URL]       在【当前目录】就地接入（已有项目里用，不覆盖现有文件）
+# 默认 Web/JS 项目（sites/ 骨架）；--ios / --android 用对应平台模版（projects/ 骨架）
+set -euo pipefail
+
+# 解析自身真实路径（可能是软链接）
+SELF="${BASH_SOURCE[0]}"
+while [ -L "$SELF" ]; do
+  LINK="$(readlink "$SELF")"
+  case "$LINK" in
+    /*) SELF="$LINK" ;;
+    *)  SELF="$(dirname "$SELF")/$LINK" ;;
+  esac
+done
+ROOT="$(cd "$(dirname "$SELF")/.." && pwd)"
+TPL="$ROOT/templates"
+SKILLS_SRC="$ROOT/skills"
+[ -d "$TPL" ] || { echo "❌ 找不到模板目录: $TPL"; exit 1; }
+
+PLATFORM="web"; HERE=0
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --here)    HERE=1; shift ;;
+    --ios)     PLATFORM="ios"; shift ;;
+    --android) PLATFORM="android"; shift ;;
+    -h|--help) sed -n '2,5p' "$0"; exit 0 ;;
+    -*)        echo "未知参数: ${1}（用 --here / --ios / --android）"; exit 1 ;;
+    *)         break ;;
+  esac
+done
+
+if [ "$HERE" -eq 1 ]; then
+  if [ $# -gt 1 ]; then echo "❌ --here 模式: newrev --here [--ios|--android] [目标URL]"; exit 1; fi
+  NAME=$(basename "$PWD")
+  URL="${1:-}"
+  [ -f CLAUDE.md ] && { echo "❌ 当前目录已有 CLAUDE.md，不覆盖——先读它再决定是否手动合并模版"; exit 1; }
+  case "$NAME" in
+    ''|*[!A-Za-z0-9._-]*) echo "⚠️ 目录名含特殊字符（${NAME}），模版里项目名将原样写入"; ;;
+  esac
+else
+  if [ $# -lt 1 ]; then
+    echo "用法: newrev [--ios|--android] <项目名> [目标URL]      新建项目"
+    echo "      newrev --here [--ios|--android] [目标URL]        在当前目录就地接入"
+    echo "例:   newrev douyin https://www.douyin.com          # Web/JS"
+    echo "      newrev --ios kuniu com.kuniu.app              # iOS"
+    echo "      newrev --android tiktok com.zhiliaoapp.musically  # Android"
+    echo "      cd 已有项目 && newrev --here https://目标站    # 已有项目里接入"
+    exit 1
+  fi
+  NAME="$1"
+  URL="${2:-}"
+  case "$NAME" in
+    ''|*[!A-Za-z0-9._-]*)
+      echo "❌ 项目名只能用字母/数字/._-（当前: ${NAME}）"; exit 1 ;;
+  esac
+  if [ -e "$NAME" ] || [ -L "$NAME" ]; then
+    echo "❌ ${NAME} 已存在（要在已有目录里接入请 cd 进去用 --here）"; exit 1
+  fi
+fi
+case "$URL" in
+  -*) echo "❌ 参数顺序: newrev [--here] [--ios|--android] [名字] [URL]"; exit 1 ;;
+esac
+
+if [ "$HERE" -eq 0 ]; then
+  if [ "$PLATFORM" = "web" ]; then
+    mkdir -p "$NAME"/{sites,plans,scripts}
+  else
+    mkdir -p "$NAME"/{projects,plans,scripts}
+  fi
+  mkdir -p "$NAME/.claude"
+  cd "$NAME"
+fi
+
+case "$PLATFORM" in
+  web)     MAIN_TPL="CLAUDE.md" ;;
+  ios)     MAIN_TPL="CLAUDE-ios.md" ;;
+  android) MAIN_TPL="CLAUDE-android.md" ;;
+esac
+[ -f "$TPL/$MAIN_TPL" ] || { echo "❌ 找不到模板: $TPL/$MAIN_TPL"; exit 1; }
+sed "s|{{PROJECT_NAME}}|$NAME|g" "$TPL/$MAIN_TPL" > CLAUDE.md
+
+# AGENTS.md：Codex 等读 AGENTS.md 的 agent 用；薄壳指向 CLAUDE.md，规则单一真源
+if [ ! -f AGENTS.md ]; then
+cat > AGENTS.md <<EOF
+# $NAME
+
+本项目的角色定位、工作流、Skills 路由、MCP 使用与止损纪律**全部以 [CLAUDE.md](CLAUDE.md) 为准**——先完整阅读 CLAUDE.md 再开工，本文件不另立规则。
+EOF
+fi
+
+mkdir -p .claude
+[ -f .mcp.json ]                  || cp "$TPL/mcp.json" .mcp.json
+[ -f .claude/settings.local.json ] || cp "$TPL/settings.local.json" .claude/settings.local.json
+[ -f mcp-optional.md ]            || cp "$TPL/mcp-optional.md" mcp-optional.md
+[ -f .gitignore ]                 || cp "$TPL/gitignore" .gitignore
+
+# skills：全局装了就用全局的；没装就软链进本项目（只在逆向项目里占 context）
+if [ -d "$HOME/.claude/skills/web-reverse-master" ]; then
+  echo "  ✅ skills 用全局的（~/.claude/skills）"
+elif [ -d "$SKILLS_SRC" ]; then
+  mkdir -p .claude/skills
+  n=0
+  for d in "$SKILLS_SRC"/*/; do
+    [ -f "$d/SKILL.md" ] || continue
+    ln -sfn "$d" ".claude/skills/$(basename "$d")"
+    n=$((n+1))
+  done
+  echo "  ✅ skills 软链进本项目 .claude/skills/（$n 个）"
+else
+  echo "  ⚠️  找不到 skills 源目录: $SKILLS_SRC"
+fi
+
+# ---------- 项目级 agent 配置目录（何老师拓扑） ----------
+# .agents/skills：Codex / ZCode 的项目内发现入口（软链全局实体，零拷贝；平台子集）
+case "$PLATFORM" in
+  web)     SUBSET="web-reverse-master ast-deobfuscation captcha-solver param-encryptor env-patcher web-reverse-field-guide" ;;
+  ios)     SUBSET="ios-recon ios-unpack ios-dynamic ios-protocol-signature ios-skill-evolver" ;;
+  android) SUBSET="android-recon android-unpack android-dynamic protocol-signature-reverser reverse-skill-evolver darwin-skill" ;;  # 末两个是维护元技能（老师安卓包原配），按需用
+esac
+mkdir -p .agents/skills
+LINK_SRC="$HOME/.claude/reverse-toolchain/skills"
+ag_n=0
+for ag_s in $SUBSET; do
+  if [ -d "$LINK_SRC/$ag_s" ] && [ ! -e ".agents/skills/$ag_s" ]; then
+    ln -s "$LINK_SRC/$ag_s" ".agents/skills/$ag_s"; ag_n=$((ag_n+1))
+  fi
+done
+echo "  ✅ .agents/skills ← ${ag_n} 个（${PLATFORM} 子集；Codex/ZCode 项目内入口）"
+# .zcode：项目配置 servers 必空（ZCode 读用户级 CLI 配置）+ 项目记忆目录
+mkdir -p .zcode/memory
+[ -f .zcode/config.json ] || printf '{\n  "mcp": {\n    "servers": {}\n  }\n}\n' > .zcode/config.json
+[ -f .zcode/memory/MEMORY.md ] || printf '# 项目记忆索引\n\n- 留痕规则：成败皆记 `<target>_<topic>.md` 并回写本索引（见全局逆向准则 §7）\n' > .zcode/memory/MEMORY.md
+# .codex：项目级保持空配置，MCP 全在用户级 ~/.codex/config.toml（防分叉）
+mkdir -p .codex
+[ -f .codex/config.toml ] || printf '# MCP 全在用户级 ~/.codex/config.toml（10 个已注册）。项目级保持空，避免配置分叉。\n' > .codex/config.toml
+
+# venv —— 优先挑新解释器，macOS 自带的 python3 是 3.9.6（已 EOL）
+PY_BIN=""
+for c in python3.13 python3.12 python3.11 python3.10 python3; do
+  command -v "$c" >/dev/null 2>&1 || continue
+  ver=$("$c" -c 'import sys;print("%d%02d"%sys.version_info[:2])' 2>/dev/null) || continue
+  if [ "${ver:-0}" -ge 310 ]; then PY_BIN="$c"; break; fi
+  [ -z "$PY_BIN" ] && PY_BIN="$c"   # 记下兜底的旧解释器，继续找更新的
+done
+
+if [ -n "$PY_BIN" ]; then
+  PY_VER=$("$PY_BIN" -V 2>&1)
+  "$PY_BIN" -m venv .venv
+  ./.venv/bin/pip install --quiet --upgrade pip || true
+  if ./.venv/bin/pip install --quiet requests curl_cffi pycryptodome; then
+    echo "  ✅ .venv（${PY_VER}）— requests / curl_cffi / pycryptodome 已装"
+  else
+    echo "  ⚠️  .venv（${PY_VER}）建好了，但依赖没装全"
+    echo "      多半是 Python 太老。装个新的再重建：brew install python@3.12 && rm -rf .venv && newrev 重跑"
+  fi
+  case "$PY_VER" in
+    *3.9*) echo "  ⚠️  用的是 macOS 自带 Python 3.9（已 EOL），建议 brew install python@3.12" ;;
+  esac
+else
+  echo "  ⚠️  没有 python3，跳过 venv"
+fi
+
+# 目标骨架：Web 用 sites/{domain}/，iOS/Android 用 projects/{target}/
+if [ -n "$URL" ]; then
+  if [ "$PLATFORM" = "web" ]; then
+    DOMAIN=$(echo "$URL" | sed -E 's|^[Hh][Tt][Tt][Pp][Ss]?://||; s|[/?#].*||; s|^www\.||; s|[^A-Za-z0-9.-]|_|g; s|\.|_|g')
+    mkdir -p "sites/$DOMAIN"/{src,docs,assets/js,assets/har,assets/screenshots,tests}
+    cat > "sites/$DOMAIN/README.md" <<EOF
+# $DOMAIN
+
+- 目标 URL: $URL
+- 状态: Phase 0（情报收集）
+
+## 关键发现
+
+## 进度
+- [ ] Phase 0 情报收集
+- [ ] Phase 1 流量与协议分析
+- [ ] Phase 2 定位加密逻辑
+- [ ] Phase 3 Plan 确认
+- [ ] Phase 4 代码还原
+EOF
+    echo "  ✅ sites/$DOMAIN/"
+  else
+    TARGET=$(echo "$URL" | sed -E 's|https?://||; s|/.*||; s|[/:]|_|g')
+    case "$PLATFORM" in
+      ios)     SUBDIRS="ipa headers hooks scripts binary_analysis capture docs" ;;
+      android) SUBDIRS="apk decompiled hooks scripts so_analysis capture artifacts docs" ;;
+    esac
+    mkdir -p "projects/$TARGET"
+    for d in $SUBDIRS; do mkdir -p "projects/$TARGET/$d"; done
+    cat > "projects/$TARGET/README.md" <<EOF
+# $TARGET
+
+- 目标: $URL
+- 平台: $PLATFORM
+- 状态: 侦察阶段（recon）
+
+## 现状与入口
+
+## 进度
+EOF
+    echo "  ✅ projects/$TARGET/（$PLATFORM 骨架）"
+  fi
+fi
+
+# MCP 全在全局 ~/.claude.json，项目 .mcp.json 不重复定义、不复制 API Key
+for m in js-reverse roxybrowser roxybrowser-playwright; do
+  if ! grep -q "\"$m\"" "$HOME/.claude.json" 2>/dev/null; then
+    echo "  ⚠️  全局还没配 $m MCP。补法见 claude-setup/README.md"
+  fi
+done
+
+echo
+echo "✅ $NAME 建好了（$PLATFORM 模版，含 CLAUDE.md + AGENTS.md）。下一步:"
+echo "   cd '$NAME' && claude"

@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+node_modules/
+sites/*/assets/
+sites/*/tests/
+*.har
+*.log
+.DS_Store
+.env
+.mcp.local.json
+.claude/skills/

@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "scenario": "enrollment_lineage",
+    "prompt": "只做本地分析。Android首启抓包依次有 /bootstrap 返回 challenge、/register 返回 device_id 与 opaque token、/report 上报事件、/login 返回 access_token，后续请求有 key_id 与 x-sign。清数据前后的离线样本显示 installation_id 变了，device_id 没变，现有样本没有TTL说明。请交付字段谱系草表、生命周期关联和下一步最小取证设计，不能触碰真机或发送请求。",
+    "expected": "区分安装实例、服务端设备记录、密钥身份、设备/风险凭证、账号会话；建立bootstrap到register/report/login与后续消费者、持久化和刷新撤销的证据链。仅样本中installation_id变而device_id不变不能证明永久设备ID或任何TTL，报告未知和已有观察边界。交付字段级谱系与最小本地实验，不清数据或联网。"
+  },
+  {
+    "id": 2,
+    "scenario": "integrity_binding",
+    "prompt": "只评审已有材料：样本A是无Play服务的AOSP；样本B返回MEETS_BASIC_INTEGRITY，requestHash对应的原始输入缺失；代码中出现AndroidKeyStore.getInstance和不允许导出私钥的错误。开发者认为这些证明永久真实设备，可以把抓包Integrity token硬编码到纯Python注册器里长期用。请评价交付边界并列出还缺的证据，不做联网或设备动作。",
+    "expected": "按样本分别标Play支持条件、具体verdict与requestHash绑定缺口；BASIC不保证锁定启动链或真人，AndroidKeyStore调用与不可导出错误不证明TEE/StrongBox。区分密钥调用与导出、平台签发与本地算法，不把捕获token硬编码为长期纯算，不因平台名称直接止损；列最小补证。"
+  },
+  {
+    "id": 3,
+    "scenario": "risk_transport",
+    "prompt": "只分析既有日志：同一Android注册请求同字节总共已发3次，均HTTP200、code=0，但账号后台无注册记录；原App成功。两边JA4相同，代理抓包没有/report且不确定是否有QUIC漏包，其他字段尚未逐字节核对。请给分层结论、竞争假设、下一步区分实验及停止条件，不发送第4次请求，不改网络设置。",
+    "expected": "停止第4次同字节发送并合并历史计数；HTTP200/code0不是业务成功，相同JA4不是同设备或传输完全一致。report未捕获且QUIC覆盖不明不能声称全量diff无缺块；保留字段/状态/传输等竞争假设，从已有材料核到达层与原版差异，单变量实验写预期反证、停止及恢复条件，不自动换IP/账号/代理。"
+  }
+]

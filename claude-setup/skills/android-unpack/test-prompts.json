@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "scenario": "典型场景：360 VIP 抹 DEX magic",
+    "prompt": "一个 22MB 的 APK 在 jadx 里只有 StubApp，运行时有大块匿名 rwx，但搜 dex\\n 完全没有结果，怎么脱？",
+    "expected": "识别 360 VIP 抹 magic 分支；优先 Root 零注入，从 maps 定位大匿名 rwx，PC 端计算 64 位 dd skip，dump 后搜索 header_size+endian 特征 70 00 00 00 78 56 34 12，切片并回填 dex magic、SHA1、adler32，最后用 jadx 验证类和方法体完整。"
+  },
+  {
+    "id": 2,
+    "scenario": "失败场景：抽取壳被动 dump 无效",
+    "prompt": "classes.dex 的类结构都在，但关键方法全是 nop/return；Root dump 出来的还是空方法，怎么办？",
+    "expected": "判定为抽取壳候选而非整体壳；反射枚举/resolve 不能证明回填，必须实际执行关键业务方法或使用 FART/Youpk 记录运行期 CodeItem，保存 method→offset 映射并 patch-back。fresh JADX 中关键方法非 nop/return 且调用链可复核后才算成功。"
+  },
+  {
+    "id": 3,
+    "scenario": "高风险场景：注入导致进程或 zygote 崩溃",
+    "prompt": "目标一 attach 就把 frida-server 弄崩，ZygiskFrida 也导致系统异常，我还要继续换 Frida 版本试吗？",
+    "expected": "停止同类注入，进入进程级反注入分支；保留原版环境并改用 Root 内存 dump、eCapture 或 strings 取证等零注入路径。不得在设备残留 new-server，不得把未验证的 dump 宣称脱壳成功，最终仍须 jadx 或 SO 结构验收。"
+  }
+]

@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "scenario": "典型场景：APK 首轮侦察与设备注册静态分诊",
+    "prompt": "我拿到一个 Android APK，要提取登录 API、首次启动的设备注册和风控 SDK 调用链；device_id、Keystore alias、attestation 和遥测字符串是否足以说明完整流程？也要判断它是否用了 Hermes、Flutter、IL2CPP 或内置证书，应该怎么开始？",
+    "expected": "先锁定可验证目标与 APK/version/hash；用 bundled ADB 固定唯一设备，检查 split、malformation 和工具链，再按需求用 jadx/apktool 输出到新目录。ZIP 库存用组合指纹识别 Hermes/React Native、Flutter、IL2CPP，并离线枚举证书资产与 network_security_config；证书 SAN 只算候选 host，不主动扫描。识别网络栈后用 reverse-index-mcp 追完整调用链；空壳 DEX 转 android-unpack。区分安装/系统/SDK/服务端设备 ID，记录 Challenge、密钥 alias/公钥注册、attestation、凭证落盘/刷新/注销、账号会话绑定和遥测入口的来源锚点，关联 Java/JNI 到实际网络提交点；SDK 指纹只是候选，静态未知保留为缺口，不能宣称服务端验证或注册成功。完整谱系交 protocol-signature-reverser 的 android-device-enrollment/android-risk-transport references，运行证据交 android-dynamic，不先重装或触发新注册。"
+  },
+  {
+    "id": 2,
+    "scenario": "失败场景：抓包后真机无网",
+    "prompt": "Reqable 抓完包以后 App 完全没网，但 adb ping 和 DNS 都正常，是不是被风控了？",
+    "expected": "不能直接使用风控结论；先查 global http_proxy、iptables NAT、ip rule 和真实监听端口，使用 android_proxy_clear 清理残留，再以 dumpsys connectivity 的 VALIDATED 状态验收。若仍失败才检查 A14 APEX CA、pinning 和网络栈。"
+  },
+  {
+    "id": 3,
+    "scenario": "复杂场景：阿里系核心流量不可见",
+    "prompt": "盒马用 Reqable 抓了很多请求，但一条核心 MTOP 都没有，OkHttp Hook 也没命中，下一步做什么？",
+    "expected": "以 ANet/libtnet/libxquic 为候选栈并保存静态证据，禁止继续堆 OkHttp Hook；recon 只完成分诊，实际 native 明文入口和后加载 re-arm 转 android-dynamic。JA3、ALPN 或私有 QUIC 转 projects/fp_stack；签名字段谱系转 protocol-signature-reverser。"
+  }
+]
