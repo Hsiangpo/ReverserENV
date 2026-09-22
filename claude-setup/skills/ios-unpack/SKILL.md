@@ -3,7 +3,7 @@ name: ios-unpack
 description: iOS 砸壳与脱壳。识别 FairPlay 加密(cryptid)→选砸壳方案→执行(手工 frida 内存 dump 优先/bfdecrypt 备选；frida-ios-dump·bagbak·dumpdecrypted 本机已弃用)→校验原加密区间字节、Mach-O 结构和反汇编→产出可静态分析的 decrypted IPA/Mach-O。cryptid=0 不能单独验收。含 dyld_shared_cache 抽取系统库。触发词：砸壳、脱壳、解密、FairPlay、cryptid、frida-ios-dump、bagbak、bfdecrypt、dumpdecrypted、dump ipa、dyld cache 抽库。
 ---
 
-> ⚠️ **本机环境适配（20260920 维护注）**：本机为 macOS，**无** `ios-device` MCP（老师自建未随包分发）、无 ida-pro-mcp。设备连接用 `frida-agent` MCP / 项目 venv 的 frida / `pymobiledevice3`；SSH 直连设备用 mac 原生工具；提头优先 mac 原生 `class-dump` / `otool`（jtool2 如未装则 brew 安装或以 class-dump 替代）。下文提及 ios-device 工具（`ios_info`/`ios_ssh` 等）的段落按此替代执行。
+> ⚠️ **本机环境适配（20260920 维护注）**：本机为 macOS，`ios-device` MCP 老师仍未分发（0818 包只有 frida-mod 设备端与工具）；ida-pro 需付费未装。设备连接用 `frida-agent` MCP / 项目 venv 的 frida / `pymobiledevice3`；SSH 直连设备用 mac 原生工具；提头优先 mac 原生 `class-dump` / `otool`（jtool2 如未装则 brew 安装或以 class-dump 替代）。下文提及 ios-device 工具（`ios_info`/`ios_ssh` 等）的段落按此替代执行。
 
 # iOS Unpack —— 砸壳与脱壳
 

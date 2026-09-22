@@ -3,7 +3,7 @@ name: ios-dynamic
 description: iOS 动态调试/Frida 对抗/SSL/越狱检测与设备注册状态取证。纯原生 Frida Hook(Interceptor/Stalker/硬件断点/ObjC runtime C API)——本机魔改 agent 无 ObjC bridge，不能用 ObjC.classes，已知类与 selector 可定点换 IMP；objection 不可用；按检测面选择 spawn 或晚 attach；抓包优先 hook libboringssl/Network.framework/QUIC 明文层。触发词：Frida、Hook、动态调试、设备注册取证、App Attest、DeviceCheck、spawn、attach、ObjC、Swift hook、objection、cycript、LLDB、debugserver、SSL pinning、越狱检测、反调试、反 Frida、注入秒退。
 ---
 
-> ⚠️ **本机环境适配（20260920 维护注）**：本机为 macOS，**无** `ios-device` MCP（老师自建未随包分发）、无 ida-pro-mcp。设备连接用 `frida-agent` MCP / 项目 venv 的 frida / `pymobiledevice3`；SSH 直连设备用 mac 原生工具；提头优先 mac 原生 `class-dump` / `otool`（jtool2 如未装则 brew 安装或以 class-dump 替代）。下文提及 ios-device 工具（`ios_info`/`ios_ssh` 等）的段落按此替代执行。
+> ⚠️ **本机环境适配（20260920 维护注）**：本机为 macOS，`ios-device` MCP 老师仍未分发（0818 包只有 frida-mod 设备端与工具）；ida-pro 需付费未装。设备连接用 `frida-agent` MCP / 项目 venv 的 frida / `pymobiledevice3`；SSH 直连设备用 mac 原生工具；提头优先 mac 原生 `class-dump` / `otool`（jtool2 如未装则 brew 安装或以 class-dump 替代）。下文提及 ios-device 工具（`ios_info`/`ios_ssh` 等）的段落按此替代执行。
 
 # iOS Dynamic —— 动态调试 / Frida 对抗 / SSL / 越狱检测
 

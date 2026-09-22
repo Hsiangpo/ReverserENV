@@ -3,7 +3,7 @@ name: ios-recon
 description: iOS 逆向侦察与静态分析总入口。连真机、定位 IPA/App、判定 FairPlay，检查 Mach-O/ObjC/Swift、Info.plist/entitlements/ATS/deeplink，梳理设备注册与风险信号入口，再分诊到砸壳、动态验证或协议签名。触发词：连真机、连设备、usbmux、拉 IPA、定位 App、Mach-O、dyld cache、class-dump、dsdump、entitlements、设备注册入口、App Attest、DeviceCheck、URL Scheme、Universal Link、抓包、iOS 逆向入口。
 ---
 
-> ⚠️ **本机环境适配（20260920 维护注）**：本机为 macOS，**无** `ios-device` MCP（老师自建未随包分发）、无 ida-pro-mcp。设备连接用 `frida-agent` MCP / 项目 venv 的 frida / `pymobiledevice3`；SSH 直连设备用 mac 原生工具；提头优先 mac 原生 `class-dump` / `otool`（jtool2 如未装则 brew 安装或以 class-dump 替代）。下文提及 ios-device 工具（`ios_info`/`ios_ssh` 等）的段落按此替代执行。
+> ⚠️ **本机环境适配（20260920 维护注）**：本机为 macOS，`ios-device` MCP 老师仍未分发（0818 包只有 frida-mod 设备端与工具）；ida-pro 需付费未装。设备连接用 `frida-agent` MCP / 项目 venv 的 frida / `pymobiledevice3`；SSH 直连设备用 mac 原生工具；提头优先 mac 原生 `class-dump` / `otool`（jtool2 如未装则 brew 安装或以 class-dump 替代）。下文提及 ios-device 工具（`ios_info`/`ios_ssh` 等）的段落按此替代执行。
 
 # iOS Recon —— 侦察与静态分析（总入口）
 

@@ -3,7 +3,7 @@ name: protocol-signature-reverser
 description: Android App 协议、设备注册谱系、签名加密与风控判因专项。用于追踪安装标识/密钥/证明/设备令牌/账号会话的生命周期，区分传输、算法、环境与业务拒绝，交付可验证的离线实现或明示依赖的方案。触发词：Android协议逆向、设备注册、设备绑定、一机一密、Play Integrity、Key Attestation、Android风控、签名逆向、x-mini、shield、mtgsig、MTOP、Gorgon、Argus、unidbg、Unicorn、HMAC、设备令牌、会话绑定、fp_stack。
 ---
 
-> ⚠️ **本机环境适配（20260920 维护注）**：本机为 macOS，**无** `frida-orchestrator` / `reverse-index` / `algo-lab` MCP（老师自建未随包分发）。设备操作用 `adb`（mac 路径，非 `android_mcp\toolchain\...adb.exe`——该 Windows 路径段按 `brew install android-platform-tools` 的 adb 替代）+ 项目 venv frida；静态索引用 `jadx` MCP（jadx-gui）+ grep 替代 reverse-index；算法对拍脚本自行落盘运行替代 algo-lab。serial 用显式参数或 `ANDROID_SERIAL`。
+> ⚠️ **本机环境适配（20260920 维护注）**：本机为 macOS，`frida-orchestrator-mcp`(80工具)/`reverse-index-mcp`/`algo-lab-mcp` 已装（vendor/android_mcp，20260922）。设备操作也常用 `adb`（mac 路径，非 `android_mcp\toolchain\...adb.exe`——该 Windows 路径段按 `brew install android-platform-tools` 的 adb 替代）+ 项目 venv frida；静态索引用 `jadx` MCP（jadx-gui）+ grep 替代 reverse-index；算法对拍脚本自行落盘运行替代 algo-lab。serial 用显式参数或 `ANDROID_SERIAL`。
 
 # Protocol Signature Reverser
 

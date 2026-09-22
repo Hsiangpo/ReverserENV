@@ -4,7 +4,7 @@ description: >
   对已授权的 Web/JS 目标执行完整协议逆向及路线设计、样本复现和证据排错：从当前线上 bundle、SourceMap、HTTP/GraphQL/WebSocket/gRPC-Web 流量定位动态字段，经 Hook、源码、WASM 或环境取证后交付可复现实现。涉及两个以上专业域时由本 Skill 统筹；单一已知缺口使用对应专业 Skill。
 ---
 
-> ⚠️ **本机环境适配（20260920 维护注）**：本机为 macOS，无 AdsPower / ida-pro-mcp / sequential-thinking，js-reverse-mcp 用 npm 版（**无** `inject_before_load` / `trace_function`，注入=先 `evaluate_script` 再 `navigate_page` 或注入后刷新；函数追踪=`set_breakpoint_on_text`+`get_paused_info`+`step`）。路线 A/C（AdsPower）↔ 本机路线 3（RoxyBrowser：`roxybrowser` 管 profile/代理，`roxybrowser-playwright` 管页面）；wasm 用 wabt（`wasm2wat`）。`../../../.claude/mcp.md` 本机不存在；`tools/reverse-chromium/` 文档在 `~/.claude/tools/reverse-chromium/`（内核补丁是 Windows 向，mac 路线 2 用 js-reverse-cloak 代替）。指纹/商业指纹墙场景优先 RoxyBrowser。AdsPower/RoxyBrowser 指纹深度采集实现在 `~/.claude/tools/reverse-chromium/fp_*`（fp_probe_adspower_cdp.py 对 RoxyBrowser 同样适用，传其 CDP 端口即可，见同目录 FP_SCRIPTS-README.md）。
+> ⚠️ **本机环境适配（20260920 维护注）**：本机为 macOS，无 AdsPower / ida-pro-mcp / sequential-thinking，js-reverse-mcp 已换老师私改版（vendor/teacher-mcp，25 工具，含 `inject_before_load`/`trace_function`/`trace_dispatcher`/`get_dispatcher_trace`，20260922 起全局注册）。路线 A/C（AdsPower）↔ 本机路线 3（RoxyBrowser：`roxybrowser` 管 profile/代理，`roxybrowser-playwright` 管页面）；wasm 用 wabt（`wasm2wat`）。`../../../.claude/mcp.md` 本机不存在；`tools/reverse-chromium/` 文档在 `~/.claude/tools/reverse-chromium/`（内核补丁是 Windows 向，mac 路线 2 用 js-reverse-cloak 代替）。指纹/商业指纹墙场景优先 RoxyBrowser。AdsPower/RoxyBrowser 指纹深度采集实现在 `~/.claude/tools/reverse-chromium/fp_*`（fp_probe_adspower_cdp.py 对 RoxyBrowser 同样适用，传其 CDP 端口即可，见同目录 FP_SCRIPTS-README.md）。
 
 # Web Reverse Master
 

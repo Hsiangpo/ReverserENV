@@ -3,7 +3,7 @@ name: ios-protocol-signature
 description: iOS 设备注册谱系、签名加密与风控分层判因。追踪 IDFV、Keychain、密钥、App Attest/DeviceCheck、设备凭证及账号会话，区分传输、平台证明与业务结果；按证据选择 CommonCrypto/白盒、原生 Frida 或 arm64 unicorn 验证，诚实标明外部依赖。触发词：iOS设备注册、设备绑定、一机一密、App Attest、DeviceCheck、Secure Enclave、iOS风控、签名逆向、CommonCrypto、CCCrypt、CCHmac、白盒、frida RPC、unicorn、keychain、字节级验证。
 ---
 
-> ⚠️ **本机环境适配（20260920 维护注）**：本机为 macOS，**无** `ios-device` MCP（老师自建未随包分发）、无 ida-pro-mcp。设备连接用 `frida-agent` MCP / 项目 venv 的 frida / `pymobiledevice3`；SSH 直连设备用 mac 原生工具；提头优先 mac 原生 `class-dump` / `otool`（jtool2 如未装则 brew 安装或以 class-dump 替代）。下文提及 ios-device 工具（`ios_info`/`ios_ssh` 等）的段落按此替代执行。
+> ⚠️ **本机环境适配（20260920 维护注）**：本机为 macOS，`ios-device` MCP 老师仍未分发（0818 包只有 frida-mod 设备端与工具）；ida-pro 需付费未装。设备连接用 `frida-agent` MCP / 项目 venv 的 frida / `pymobiledevice3`；SSH 直连设备用 mac 原生工具；提头优先 mac 原生 `class-dump` / `otool`（jtool2 如未装则 brew 安装或以 class-dump 替代）。下文提及 ios-device 工具（`ios_info`/`ios_ssh` 等）的段落按此替代执行。
 
 # iOS Protocol Signature —— 签名/协议算法还原
 

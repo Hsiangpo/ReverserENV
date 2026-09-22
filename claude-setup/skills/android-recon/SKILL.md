@@ -3,7 +3,7 @@ name: android-recon
 description: Android APK 逆向侦察与静态分析入口。用于设备与工具链预检、APK 拉取、malformation/加壳初判、jadx/apktool 反编译、网络栈识别、API/调用链索引、设备注册与风控 SDK 分诊和抓包通路治理；发现壳、运行期 Hook 或签名算法问题时路由到对应专项。触发词：Android逆向、APK反编译、jadx、apktool、提取API、调用链、设备注册入口、风控SDK识别、连真机、证书、抓包、QUIC、Cronet、ANet、malformation。
 ---
 
-> ⚠️ **本机环境适配（20260920 维护注）**：本机为 macOS，**无** `frida-orchestrator` / `reverse-index` / `algo-lab` MCP（老师自建未随包分发）。设备操作用 `adb`（mac 路径，非 `android_mcp\toolchain\...adb.exe`——该 Windows 路径段按 `brew install android-platform-tools` 的 adb 替代）+ 项目 venv frida；静态索引用 `jadx` MCP（jadx-gui）+ grep 替代 reverse-index；算法对拍脚本自行落盘运行替代 algo-lab。serial 用显式参数或 `ANDROID_SERIAL`。
+> ⚠️ **本机环境适配（20260920 维护注）**：本机为 macOS，`frida-orchestrator-mcp`(80工具)/`reverse-index-mcp`/`algo-lab-mcp` 已装（vendor/android_mcp，20260922）。设备操作也常用 `adb`（mac 路径，非 `android_mcp\toolchain\...adb.exe`——该 Windows 路径段按 `brew install android-platform-tools` 的 adb 替代）+ 项目 venv frida；静态索引用 `jadx` MCP（jadx-gui）+ grep 替代 reverse-index；算法对拍脚本自行落盘运行替代 algo-lab。serial 用显式参数或 `ANDROID_SERIAL`。
 
 # Android Recon
 

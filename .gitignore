@@ -3,3 +3,6 @@ __pycache__/
 *.pyc
 .venv/
 node_modules/
+
+# 老师 MCP 原始包（2.5GB 二进制，不入库；运行副本在 ~/.claude/reverse-toolchain/vendor/）
+claude-setup/mcps/
