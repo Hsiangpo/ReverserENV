@@ -82,7 +82,8 @@ for p in ~/Develop/Masterpiece/System/GPTEAM ~/Develop/Masterpiece/System/AutoSu
   done
 done
 ```
-（项目侧 `.claude/.agents/.zcode` 的 skills 目录用相对软链 `../../skills/<名>`，随项目 git 走；若项目需要安卓/iOS 技能，同法加对应 skill 名。）
+（AutoSubcribe：实体入 `skills/` + 三平台相对软链 `../../skills/<名>`，原名直拷。
+GPTEAM：**有 corpus 校验器与 gpteam-<词>-<词> 命名规范**——拷入后须按映射改名并全文件替换引用、补 test-prompts.json、四镜像（skills/.claude/.agents/.zcode）实体等价，最后跑 `skills/gpteam-development-standards/scripts/corpus/validate_skill_corpus.py --no-tests` 需 8/8。改名映射：web-reverse-master→gpteam-web-reverse、web-reverse-field-guide→gpteam-field-guide、param-encryptor→gpteam-param-encryptor、captcha-solver→gpteam-captcha-solver、env-patcher→gpteam-env-patcher、ast-deobfuscation→gpteam-ast-deobfuscation；指向 `../../*` 的 markdown 链接需降为纯文本路径。）
 
 ## 8. 终验 + 提交
 
