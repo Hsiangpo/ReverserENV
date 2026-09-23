@@ -71,6 +71,19 @@ done
 根 `CLAUDE.md`、`AGENTS.md`、`README.md`、`claude-setup/README.md`、`claude-setup/install.sh` 头注、`templates/CLAUDE.md` §6。检查口径：skill 数量、技能表行、两种用法句。
 
 
+## 7.5 项目级副本同步（本机策略：全局不挂载，项目按需）
+
+本机 20260922 起 skills 全局卸载、按项目挂载。老师更新 web 六件套后，同步两个工作项目的副本：
+
+```bash
+for p in ~/Develop/Masterpiece/System/GPTEAM ~/Develop/Masterpiece/System/AutoSubcribe; do
+  for s in web-reverse-master param-encryptor captcha-solver env-patcher ast-deobfuscation web-reverse-field-guide; do
+    rm -rf "$p/skills/$s"; cp -R "$LIVE/$s" "$p/skills/$s"
+  done
+done
+```
+（项目侧 `.claude/.agents/.zcode` 的 skills 目录用相对软链 `../../skills/<名>`，随项目 git 走；若项目需要安卓/iOS 技能，同法加对应 skill 名。）
+
 ## 8. 终验 + 提交
 
 ```bash

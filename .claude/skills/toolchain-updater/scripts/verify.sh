@@ -17,16 +17,29 @@ for d in skills rules bin templates; do
   if diff -rq "$SRC/$d" "$LIVE/$d" >/dev/null 2>&1; then ok "$d 零差异"; else bad "${d} 有差异（diff -rq ${SRC}/${d} ${LIVE}/${d}）"; fi
 done
 
-echo "═══ 2. 三平台 skills 软链 ═══"
+echo "═══ 2. 三平台 skills 软链（自适应：全局模式 或 项目级模式） ═══"
 EXPECT=$(ls "$SRC/skills" | wc -l | tr -d ' ')
+GLOBAL_N=0
 for pdir in "$HOME/.claude/skills" "$HOME/.codex/skills" "$HOME/.zcode/skills"; do
   n=0
   for l in "$pdir"/*/; do
     s=$(basename "$l"); [ "$s" = ".system" ] && continue
     [ -f "$l/SKILL.md" ] && n=$((n+1))
   done
-  if [ "$n" = "$EXPECT" ]; then ok "${pdir}（${n}/${EXPECT}）"; else bad "${pdir} 计数不符（${n}/${EXPECT}）"; fi
+  GLOBAL_N=$((GLOBAL_N + n))
 done
+if [ "$GLOBAL_N" -eq 0 ]; then
+  ok "项目级模式（全局未挂载，本机 20260922 起策略；实体在 live+源）"
+else
+  for pdir in "$HOME/.claude/skills" "$HOME/.codex/skills" "$HOME/.zcode/skills"; do
+    n=0
+    for l in "$pdir"/*/; do
+      s=$(basename "$l"); [ "$s" = ".system" ] && continue
+      [ -f "$l/SKILL.md" ] && n=$((n+1))
+    done
+    if [ "$n" = "$EXPECT" ]; then ok "${pdir}（${n}/${EXPECT}）"; else bad "${pdir} 计数不符（${n}/${EXPECT}）"; fi
+  done
+fi
 
 echo "═══ 3. 脚本语法（bash 3.2） ═══"
 for f in "$SRC/install.sh" "$SRC/bin/newrev"; do
