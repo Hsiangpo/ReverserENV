@@ -2,6 +2,8 @@
 
 **本机这些已经全部由 install.sh 装进全局了**，这个文件只在「换机器、不想跑 install.sh、手动抄配置」时有用。
 
+> 片段里的 `<HOME>` 换成本机 `echo $HOME` 的结果（JSON 不展开 `~` 和 `$HOME`）。绝对路径只写进本机配置，别提交回本仓库。
+
 分工：
 
 - **全局已装**（`~/.claude.json` 的 `mcpServers`，所有目录都能用）：`js-reverse`、`js-reverse-cloak`、`roxybrowser`、`roxybrowser-playwright`、`chrome-devtools`、`wiremcp`、`reqable`、`jadx`、`frida-agent`、`wedecode`。项目里**不要**再定义同名条目，否则会和全局的打架，而且 Roxy 的 API Key 会被复制进每个项目目录（可能跟着 git 泄出去）。
@@ -70,8 +72,8 @@ JDK 21 + jadx + jadx-ai-mcp 插件都在 `~/.claude/reverse-toolchain/vendor/`�
 
 ```json
 "jadx": {
-  "command": "/Users/你/.local/bin/uv",
-  "args": ["--directory", "/Users/你/.claude/reverse-toolchain/vendor/jadx-mcp-server", "run", "--python", "3.12", "jadx_mcp_server.py"]
+  "command": "<HOME>/.local/bin/uv",
+  "args": ["--directory", "<HOME>/.claude/reverse-toolchain/vendor/jadx-mcp-server", "run", "--python", "3.12", "jadx_mcp_server.py"]
 }
 ```
 
@@ -82,7 +84,7 @@ JDK 21 + jadx + jadx-ai-mcp 插件都在 `~/.claude/reverse-toolchain/vendor/`�
 `uv tool install --with 'mcp<2' frida-mcp`（必须钉 mcp<2）。目标设备要 root/越狱并跑着 frida-server。
 
 ```json
-"frida-agent": { "command": "/Users/你/.local/bin/frida-mcp" }
+"frida-agent": { "command": "<HOME>/.local/bin/frida-mcp" }
 ```
 
 ---
@@ -104,7 +106,7 @@ install.sh 已 clone + build 到 `~/.claude/reverse-toolchain/vendor/wedecode/`�
 ```json
 "wedecode": {
   "command": "node",
-  "args": ["/Users/你/.claude/reverse-toolchain/vendor/wedecode/dist/mcp/wedecode-mcp.js"]
+  "args": ["<HOME>/.claude/reverse-toolchain/vendor/wedecode/dist/mcp/wedecode-mcp.js"]
 }
 ```
 

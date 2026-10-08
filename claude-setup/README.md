@@ -44,7 +44,7 @@ bash "<本目录>/install.sh" --core-only
 ROXY_API_KEY=你的Key bash "<本目录>/install.sh"
 ```
 
-端口以客户端 API 页显示为准（默认 50007，不同就再加 `ROXY_API_HOST=http://127.0.0.1:端口`）。
+端口以客户端 API 页显示为准（默认 50000，不同就再加 `ROXY_API_HOST=http://127.0.0.1:端口`）。
 
 ### 省 context 的模式
 
@@ -94,7 +94,7 @@ douyin/
 
 API Key 已经配在全局 `~/.claude.json` 的 `roxybrowser` 条目里，**项目 `.mcp.json` 不再重复定义** —— 否则每建一个项目就把 Key 复制一份到项目目录，跟着 git 推出去就麻烦了。
 
-用之前确认：RoxyBrowser 客户端已启动 → API 开关已打开（客户端 → API）。本地 API 端口以客户端面板为准，当前配的是 `http://127.0.0.1:50007`。
+用之前确认：RoxyBrowser 客户端已启动 → API 开关已打开（客户端 → API）。本地 API 端口以客户端面板为准（默认 `http://127.0.0.1:50000`；探活 `curl http://127.0.0.1:50000/health` 应回 200）。客户端没开或端口配错时 `roxybrowser` MCP 会直接加载失败。
 
 探活：调 `roxy_workspace_list`（**没有** `roxy_health_check` 这个工具）。
 
@@ -166,17 +166,18 @@ browser_connect_roxy(cdpEndpoint=<ws>)   → 之后页面操作都作用在这�
 | `jadx` | Temurin JDK 21 + jadx 1.5.6 + jadx-ai-mcp 插件（`vendor/`） | 安卓 APK 反编译，**不是 Web** | 先终端敲 `jadx-gui` 开着，加载一个 apk |
 | `frida-agent` | frida-tools 17 + frida-mcp（`uv tool`） | 手机动态插桩，**不是 Web** | 需要 root/越狱设备跑着 frida-server |
 | `wedecode` | 自己 build 的 MCP-WEDECODEMCP（`vendor/`） | 微信小程序反编译 | mac 上小程序包在 `~/Library/Containers/com.tencent.xinWeChat/.../Applet/`，让 agent 自己找 |
+| `frida-orchestrator-mcp` / `reverse-index-mcp` / `algo-lab-mcp` | 老师安卓三件套（`vendor/android_mcp`，venv 钉 frida 16.5.9 + mcp<2）+ Google platform-tools adb（`vendor/platform-tools` → `~/.local/bin/adb`） | 安卓真机编排 / 反编译索引 / 算法对拍 | 原包 `mcps/安卓/android_mcp.zip` 不入 git，换机器要手动拷过来再跑 install.sh。老师包只带 Windows `adb.exe`，mac 靠 `ANDROID_MCP_ADB` 指到 platform-tools 的 adb（install.sh 注册时自动带上）。**魔改 frida-server `new-server-arm64-16.5.8-dev.11` 不在包里**，`push/start_patched_frida_server` 要拿到文件放进 `vendor/android_mcp/toolchain/device/frida/` 才能用 |
 
 **没装的只有 `ida-pro`**：ida-pro-mcp 明确写着不支持 IDA Free，只能付费。wasm 用免费的 wabt（`wasm2wat` / `wasm-decompile`，已 `npm i -g`）足够。
 
 `templates/mcp-optional.md` 保留了各 MCP 的配置片段和 `js-reverse-roxy`（在 Roxy 指纹窗里下断点用，见上文接管方式 B），换机器不跑 install.sh 时照着抄。
 
-## 已知环境事实
+## 已知环境事实（原装机实测；换机器以当前机器实测为准）
 
 - `node` v24.20.0，`npx` 11.19.0 —— 满足 js-reverse-mcp 的 20.19+ 要求
 - PATH 上的 `python3` 是 **macOS 自带 3.9.6（已 EOL）**；真正该用的是 `~/.local/bin/python3.12`。`newrev` 已自动挑最新的，脚本里别硬写 `python3`
 - 没装 `brew`。Wireshark 4.4.18 装在 `/Applications`，tshark 不在 PATH 但 WireMCP 会自己去 `.app` 里找
-- 本机开着系统代理（`HTTPS_PROXY=http://127.0.0.1:7897`）。**Node 的 `fetch` 默认不走这个代理**，所以 cloakbrowser 这类用 fetch 下载的工具会直连 GitHub 然后超时；`install.sh` 已加 `NODE_USE_ENV_PROXY=1` 解决。`js-reverse-cloak` 第一次用时如果二进制不在也会遇到同样问题，所以要靠 install.sh 预下载
+- 开着系统代理时（`HTTPS_PROXY` 有值，端口各机不同，别写死），**Node 的 `fetch` 默认不走这个代理**，所以 cloakbrowser 这类用 fetch 下载的工具会直连 GitHub 然后超时；`install.sh` 已加 `NODE_USE_ENV_PROXY=1` 解决。`js-reverse-cloak` 第一次用时如果二进制不在也会遇到同样问题，所以要靠 install.sh 预下载
 - `uv` 在 `~/.local/bin/uv`。`timeout` 命令 macOS 没有，脚本里别用
 - **Python `mcp` SDK 2.x 改了 API**（`FastMCP` 改名 `MCPServer`），`frida-mcp` 还在用旧的，必须钉 `mcp<2`，install.sh 已处理
 - Reqable 有两个 MCP：社区的 `reqable-mcp`（PyPI，要配 Report Server 推 HAR，且也有 mcp<2 问题）和**官方的 `reqable-mcp-server`**（Dart，随 App 附带在 `Contents/Helpers/mcp-server`，直接读 Reqable 本地 API）。用官方的。

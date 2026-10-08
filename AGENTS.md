@@ -19,6 +19,7 @@ bash "<本目录>/claude-setup/install.sh"
 
 - **`roxybrowser` 没装** 是正常的，它需要 API Key。告诉用户：打开 RoxyBrowser 客户端 → API → 启用 → 复制 Key，然后 `ROXY_API_KEY=xxx bash <本目录>/claude-setup/install.sh` 再跑一次。**不要替用户猜 Key，不要把 Key 写进任何项目目录。**
 - 已有的 MCP 会显示「已有，跳过」，不会覆盖用户现有配置。
+- **安卓三件套**（`frida-orchestrator-mcp` / `reverse-index-mcp` / `algo-lab-mcp`）：老师原包 `claude-setup/mcps/安卓/android_mcp.zip` 不入 git，换机器要用户手动拷进来，install.sh 才会解压、建 venv、注册。adb 由 install.sh 下载 Google 官方 platform-tools（`~/.local/bin/adb`），注册时带 `ANDROID_MCP_ADB` 环境变量；镜像到 Codex / 其他 agent 时**这个变量也要带上**（值 = 本机 `command -v adb` 的结果，配置在本机，不进本仓库）。魔改 frida-server 不在老师包里，缺失属已知状态，别假装可用。
 - **`ida-pro` 不装**：ida-pro-mcp 不支持 IDA Free，用户明确要免费的。wasm 用 wabt（`wasm2wat` / `wasm-decompile`）。
 - `reqable` 用的是 Reqable **自带的官方 MCP**（`/Applications/Reqable.app/Contents/Helpers/mcp-server`），不需要配 Report Server；Reqable 首次打开会引导装根证书，那步要用户自己点（要输系统密码，你不能代输）。jadx MCP 用之前先开 `jadx-gui` 加载 apk。
 - Reqable 是 Flutter 应用，AppleScript / 辅助功能看不到它的 UI 元素，别试图自动化点它的界面。

@@ -19,9 +19,11 @@ script_dir = Path(__file__).parent
 sys.path.insert(0, str(script_dir))
 try:
     from i18n_logger import get_logger
+    from adb_locator import resolve_adb
 except ImportError:
     # 如果直接导入失败，尝试使用绝对导入
     from scripts.i18n_logger import get_logger
+    from scripts.adb_locator import resolve_adb
 
 class UnpackOrchestrator:
     """解包策略协调器 - 根据加固类型自动选择最佳策略"""
@@ -36,8 +38,8 @@ class UnpackOrchestrator:
         self.logger = get_logger(language=language, verbose=verbose, module="unpack_orchestrator")
         self.verbose = verbose
         self.script_dir = Path(__file__).parent
-        # laohe: device commands must stay pinned to the repository toolchain.
-        self.adb_path = self.script_dir.parents[3] / "android_mcp" / "toolchain" / "bin" / "windows" / "platform-tools" / "adb.exe"
+        # laohe: device commands must stay pinned to one explicit adb (ANDROID_MCP_ADB > bundled > PATH).
+        self.adb_path = resolve_adb(self.script_dir.parents[3])
         self.serial = serial or os.environ.get("ANDROID_SERIAL")
         if self.serial and not re.fullmatch(r"[A-Za-z0-9._:-]+", self.serial):
             raise ValueError("serial contains unsupported characters")
@@ -61,7 +63,7 @@ class UnpackOrchestrator:
     def _adb_cmd(self, *args: str) -> List[str]:
         """Build a command for the bundled ADB and one explicitly selected device."""
         if not self.adb_path.is_file():
-            raise FileNotFoundError(f"Bundled ADB not found: {self.adb_path}")
+            raise FileNotFoundError(f"ADB not found (set ANDROID_MCP_ADB or put adb on PATH): {self.adb_path}")
         if not self.serial:
             raise RuntimeError("device operation requires --serial or ANDROID_SERIAL")
         return [str(self.adb_path), "-s", self.serial, *args]

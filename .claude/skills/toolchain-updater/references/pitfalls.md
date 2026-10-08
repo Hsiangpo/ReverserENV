@@ -23,3 +23,5 @@
 10. **路径迁移**：仓库已从 `~/Desktop/逆向` 挪到 `~/Desktop/有用/逆向`（用户手动挪的）——文档/脚本里引用路径时以 `claude-setup` 相对结构为准，别写死上层路径（skill 内部用 `<仓库>` 占位）。
 
 11. **CloakBrowser 桌面图标**：Mac 上 `~/Desktop/Cloak浏览器.app`（osacompile 做的 AppleScript，9223 专用端口，9222 被 js-reverse MCP 常占）。重装系统要重做。
+
+12. **老师 android_mcp 是 Windows 包**：`common/paths.py` 写死 `toolchain/bin/windows/platform-tools`，包里只有 `adb.exe`，`device/frida/` 是空目录。mac 上表现为所有 agent 的 frida-orchestrator-mcp 同时报 `No such file or directory: 'adb'`——不是某个 agent 配错。修法见 machine-install.md「安卓三件套 / adb」；老师发新版时 android-unpack 的 `scripts/adb_locator.py` 适配要保留（三个脚本经它解析 adb）。

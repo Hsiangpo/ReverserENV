@@ -18,6 +18,7 @@ script_dir = Path(__file__).resolve().parent
 if str(script_dir) not in sys.path:
     sys.path.insert(0, str(script_dir))
 from i18n_logger import get_logger
+from adb_locator import resolve_adb
 
 class EnhancedDexDumpRunner:
     """Enhanced DexDump Runner - Actual implementation"""
@@ -47,9 +48,10 @@ class EnhancedDexDumpRunner:
         if not self.serial or not re.fullmatch(r"[A-Za-z0-9._:-]+", self.serial):
             raise ValueError("a valid --serial or ANDROID_SERIAL is required")
         repo_root = Path(__file__).resolve().parents[4]
-        self.adb_path = repo_root / "android_mcp" / "toolchain" / "bin" / "windows" / "platform-tools" / "adb.exe"
+        self.adb_path = resolve_adb(repo_root)
         configured_dexdump = os.environ.get("ANDROID_MCP_FRIDA_DEXDUMP")
-        self.dexdump_path = Path(configured_dexdump) if configured_dexdump else Path(sys.executable).resolve().parent / "frida-dexdump.exe"
+        dexdump_name = "frida-dexdump.exe" if os.name == "nt" else "frida-dexdump"
+        self.dexdump_path = Path(configured_dexdump) if configured_dexdump else Path(sys.executable).resolve().parent / dexdump_name
 
     def _adb_cmd(self, *args: str) -> List[str]:
         return [str(self.adb_path), "-s", self.serial, *args]

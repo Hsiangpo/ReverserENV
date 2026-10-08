@@ -3,7 +3,7 @@ name: android-dynamic
 description: Android 运行期动态分析专项。用于真机（Pixel 6 主力 / Pixel 4 XL 印度支付矩阵机）上的 Frida Hook/RPC、反注入判因、Java/JNI/native 最窄边界观察、设备注册与风控状态取证、SSL Pinning 与 native 网络栈绕过、Stalker/运行期快照和 Root 检测验证。触发词：Android Frida、Hook、动态调试、设备注册取证、风控状态、attach、spawn、反Frida、SSL pinning、Cronet、ANet、libxquic、Stalker、native trace、RPC oracle、eCapture。
 ---
 
-> ⚠️ **本机环境适配（20260920 维护注）**：本机为 macOS，`frida-orchestrator-mcp`(80工具)/`reverse-index-mcp`/`algo-lab-mcp` 已装（vendor/android_mcp，20260922）。设备操作也常用 `adb`（mac 路径，非 `android_mcp\toolchain\...adb.exe`——该 Windows 路径段按 `brew install android-platform-tools` 的 adb 替代）+ 项目 venv frida；静态索引用 `jadx` MCP（jadx-gui）+ grep 替代 reverse-index；算法对拍脚本自行落盘运行替代 algo-lab。serial 用显式参数或 `ANDROID_SERIAL`。
+> ⚠️ **本机环境适配（20260920 维护注）**：本机为 macOS，`frida-orchestrator-mcp`(80工具)/`reverse-index-mcp`/`algo-lab-mcp` 已装（vendor/android_mcp，20260922）。设备操作也常用 `adb`（mac 路径，非 `android_mcp\toolchain\...adb.exe`——该 Windows 路径段由 install.sh 装的 Google platform-tools 替代：`~/.local/bin/adb`；MCP 与 android-unpack 脚本统一按 `ANDROID_MCP_ADB` > 包内路径 > PATH 解析）+ 项目 venv frida；静态索引用 `jadx` MCP（jadx-gui）+ grep 替代 reverse-index；算法对拍脚本自行落盘运行替代 algo-lab。serial 用显式参数或 `ANDROID_SERIAL`。
 
 # Android Dynamic
 

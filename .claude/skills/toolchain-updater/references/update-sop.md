@@ -53,7 +53,7 @@ done
 
 **ANDROID**：
 ```markdown
-> ⚠️ **本机环境适配（<日期> 维护注）**：本机为 macOS，**无** `frida-orchestrator` / `reverse-index` / `algo-lab` MCP（老师自建未随包分发）。设备操作用 `adb`（mac 路径，非 `android_mcp\toolchain\...adb.exe`——该 Windows 路径段按 `brew install android-platform-tools` 的 adb 替代）+ 项目 venv frida；静态索引用 `jadx` MCP（jadx-gui）+ grep 替代 reverse-index；算法对拍脚本自行落盘运行替代 algo-lab。serial 用显式参数或 `ANDROID_SERIAL`。
+> ⚠️ **本机环境适配（<日期> 维护注）**：本机为 macOS，**无** `frida-orchestrator` / `reverse-index` / `algo-lab` MCP（老师自建未随包分发）。设备操作用 `adb`（mac 路径，非 `android_mcp\toolchain\...adb.exe`——该 Windows 路径段由 install.sh 装的 Google platform-tools 替代：`~/.local/bin/adb`；MCP 与 android-unpack 脚本统一按 `ANDROID_MCP_ADB` > 包内路径 > PATH 解析）+ 项目 venv frida；静态索引用 `jadx` MCP（jadx-gui）+ grep 替代 reverse-index；算法对拍脚本自行落盘运行替代 algo-lab。serial 用显式参数或 `ANDROID_SERIAL`。
 ```
 
 判断该打哪种注：grep 新 SKILL.md 是否含 `AdsPower|tools/reverse-chromium`（WEB）、`ios-device`（IOS）、`frida-orchestrator|adb.exe`（ANDROID）。

@@ -60,6 +60,21 @@ if grep -q "@reverse_principles.md" "$HOME/.claude/CLAUDE.md" 2>/dev/null && [ -
 else bad "~/.claude/CLAUDE.md 准则未挂载或附件缺失"; fi
 if grep -q "逆向准则" "$HOME/.codex/AGENTS.md" 2>/dev/null; then ok "~/.codex/AGENTS.md 内联"; else bad "~/.codex/AGENTS.md 缺准则"; fi
 
+echo "═══ 5.5 可移植性：仓库内无本机绝对路径 ═══"
+# _meta/参考 是原样留存的外部提示词（含 /home/claude 等非本机路径），排除；老师环境 E:\ 等描述性文字不算
+LEAK=$(cd "$REPO" && git grep -n -I -E "/Users/[A-Za-z0-9_.-]+/|/home/[a-z][a-z0-9_-]*/" -- . ':!claude-setup/_meta' 2>/dev/null | head -3)
+if [ -z "$LEAK" ]; then ok "无 /Users/<名>/ 或 /home/<名>/ 绝对路径"
+else bad "发现绝对路径：$(echo "$LEAK" | head -1 | cut -c1-100)"; fi
+
+echo "═══ 5.6 安卓三件套 / adb（未装只警告，不计失败） ═══"
+AMCP="$LIVE/vendor/android_mcp"
+if command -v adb >/dev/null 2>&1 || [ -x "$HOME/.local/bin/adb" ]; then ok "adb 可用"
+else echo "  ⚠️  没有 adb（install.sh 非 --skip-downloads 会自动装）"; fi
+if [ -x "$AMCP/.venv/bin/python" ]; then
+  "$AMCP/.venv/bin/python" -c "import frida, mcp" >/dev/null 2>&1 && ok "android_mcp venv 可导入 frida/mcp" || bad "android_mcp venv 缺 frida/mcp"
+  [ -n "$(ls -A "$AMCP/toolchain/device/frida" 2>/dev/null)" ] || echo "  ⚠️  魔改 frida-server 缺失（老师包未附带，已知状态）"
+else echo "  ⚠️  android_mcp 未装（mcps/安卓/android_mcp.zip 不随 git，需手动拷入后跑 install.sh）"; fi
+
 if [ "$QUICK" -eq 1 ]; then
   echo; echo "── quick 模式，跳过 newrev 干跑 ──"
 else

@@ -15,6 +15,7 @@ script_dir = Path(__file__).resolve().parent
 if str(script_dir) not in sys.path:
     sys.path.insert(0, str(script_dir))
 from i18n_logger import get_logger
+from adb_locator import resolve_adb
 
 class RootMemoryExtractor:
     """Root Memory Extractor - Static memory analysis solution that completely bypasses application-layer detection"""
@@ -37,9 +38,9 @@ class RootMemoryExtractor:
         self.serial = serial or os.environ.get("ANDROID_SERIAL")
         if not self.serial or not re.fullmatch(r"[A-Za-z0-9._:-]+", self.serial):
             raise ValueError("a valid --serial or ANDROID_SERIAL is required")
-        self.adb_path = Path(__file__).resolve().parents[4] / "android_mcp" / "toolchain" / "bin" / "windows" / "platform-tools" / "adb.exe"
+        self.adb_path = resolve_adb(Path(__file__).resolve().parents[4])
         if not self.adb_path.is_file():
-            raise FileNotFoundError(f"Bundled ADB not found: {self.adb_path}")
+            raise FileNotFoundError(f"ADB not found (set ANDROID_MCP_ADB or put adb on PATH): {self.adb_path}")
 
     def _adb_cmd(self, *args: str) -> List[str]:
         return [str(self.adb_path), "-s", self.serial, *args]

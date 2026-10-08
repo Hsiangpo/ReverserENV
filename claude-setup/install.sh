@@ -25,6 +25,8 @@ done
 SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DST="$HOME/.claude/reverse-toolchain"
 VENDOR="$DST/vendor"
+ADB_BIN=""
+AMCP="$VENDOR/android_mcp"
 SKILLS_DST="$HOME/.claude/skills"
 BIN_DST="$HOME/.local/bin"
 export PATH="$BIN_DST:$PATH"
@@ -237,6 +239,49 @@ else uv tool install --python 3.12 --force --with 'mcp<2' frida-mcp >/dev/null 2
 command -v frida >/dev/null 2>&1 && echo "  ✔︎ frida-tools $(frida --version 2>/dev/null)" \
   || { uv tool install --python 3.12 frida-tools >/dev/null 2>&1 && echo "  ✅ frida-tools $(frida --version 2>/dev/null)" || echo "  ❌ frida-tools 装失败"; }
 
+# ---------- 10.5 adb（Google 官方 platform-tools；老师包只带 Windows adb.exe）----------
+echo; echo "==> adb（Google 官方 platform-tools）"
+PT_DIR="$VENDOR/platform-tools"
+if [ -x "$PT_DIR/adb" ]; then echo "  ✔︎ 已有 $("$PT_DIR/adb" version 2>/dev/null | head -1)"
+elif [ "$SKIP_DOWNLOADS" -eq 1 ]; then echo "  ↪︎ --skip-downloads，跳过"
+else
+  case "$(uname -s)" in Darwin) PT_OS=darwin ;; Linux) PT_OS=linux ;; *) PT_OS="" ;; esac
+  mkdir -p "$VENDOR"
+  if [ -n "$PT_OS" ] && dl "https://dl.google.com/android/repository/platform-tools-latest-${PT_OS}.zip" "$VENDOR/platform-tools.zip"; then
+    rm -rf "$PT_DIR" && unzip -q "$VENDOR/platform-tools.zip" -d "$VENDOR" && rm -f "$VENDOR/platform-tools.zip" \
+      && echo "  ✅ $("$PT_DIR/adb" version 2>/dev/null | head -1)" || echo "  ❌ 解压失败"
+  else echo "  ❌ 下载失败"; fi
+fi
+if [ -x "$PT_DIR/adb" ]; then
+  for b in adb fastboot; do [ -x "$PT_DIR/$b" ] && ln -sf "$PT_DIR/$b" "$BIN_DST/$b" || true; done
+  ADB_BIN="$BIN_DST/adb"
+elif command -v adb >/dev/null 2>&1; then ADB_BIN="$(command -v adb)"; echo "  ✔︎ 用已有 adb：${ADB_BIN}"
+fi
+
+# ---------- 10.6 老师安卓三件套 android_mcp（frida-orchestrator / reverse-index / algo-lab）----------
+echo; echo "==> 安卓三件套 android_mcp"
+AMCP_ZIP="$SRC/mcps/安卓/android_mcp.zip"
+if [ -f "$AMCP/servers/frida_orchestrator_mcp/server.py" ]; then echo "  ✔︎ 已有"
+elif [ -f "$AMCP_ZIP" ]; then
+  echo "  ⬇︎ 解压 android_mcp.zip（约 1.5GB）..."
+  mkdir -p "$VENDOR"
+  if command -v ditto >/dev/null 2>&1; then ditto -x -k "$AMCP_ZIP" "$VENDOR"; else unzip -q -o "$AMCP_ZIP" -d "$VENDOR"; fi \
+    && echo "  ✅ 已解压到 vendor/android_mcp" || echo "  ❌ 解压失败"
+else
+  echo "  ⚠️  没有 android_mcp：老师原包不入 git，换机器要手动拷到 <本目录>/mcps/安卓/android_mcp.zip 再重跑"
+fi
+if [ -f "$AMCP/servers/frida_orchestrator_mcp/server.py" ]; then
+  if "$AMCP/.venv/bin/python" -c "import frida, mcp" >/dev/null 2>&1; then echo "  ✔︎ venv 已就绪"
+  else
+    # 钉 frida 16.5.9（对齐魔改 server 16.5.8-dev）、mcp<2（FastMCP 旧 API）
+    uv venv --clear --python 3.12 "$AMCP/.venv" >/dev/null 2>&1 \
+      && uv pip install --python "$AMCP/.venv/bin/python" 'frida==16.5.9' 'mcp<2' requests >/dev/null 2>&1 \
+      && echo "  ✅ venv（frida 16.5.9 + mcp<2）" || echo "  ❌ venv 创建失败"
+  fi
+  [ -n "$(ls -A "$AMCP/toolchain/device/frida" 2>/dev/null)" ] \
+    || echo "  ⚠️  魔改 frida-server（new-server-arm64-16.5.8-dev.11）不在老师包里：push/start_patched_frida_server 不可用，拿到后放进 vendor/android_mcp/toolchain/device/frida/"
+fi
+
 # ---------- 11. wedecode（微信小程序反编译）----------
 echo; echo "==> wedecode"
 WD="$VENDOR/wedecode"
@@ -277,14 +322,20 @@ else
     else echo "  ⚠️  frida-agent MCP 未就绪（frida-mcp 没构建好），本次不注册"; fi
     if [ -f "$WD/dist/mcp/wedecode-mcp.js" ]; then add_mcp wedecode "微信小程序反编译" -- node "$WD/dist/mcp/wedecode-mcp.js"
     else echo "  ⚠️  wedecode MCP 未就绪（没构建好），本次不注册"; fi
+    if [ -x "$AMCP/.venv/bin/python" ]; then
+      AENV="ANDROID_MCP_ADB=${ADB_BIN:-adb}"
+      add_mcp frida-orchestrator-mcp "安卓真机编排（老师自建）" -e ANDROID_MCP_TOOL_TIMEOUT=90 -e "$AENV" -- "$AMCP/.venv/bin/python" "$AMCP/servers/frida_orchestrator_mcp/server.py"
+      add_mcp reverse-index-mcp "反编译产物索引（老师自建）" -- "$AMCP/.venv/bin/python" "$AMCP/servers/reverse_index_mcp/server.py"
+      add_mcp algo-lab-mcp "算法对拍实验台（老师自建）" -- "$AMCP/.venv/bin/python" "$AMCP/servers/algo_lab_mcp/server.py"
+    else echo "  ⚠️  安卓三件套未就绪（android_mcp 没解压或 venv 没建好），本次不注册"; fi
   fi
   if has_mcp roxybrowser; then echo "  ✔︎ roxybrowser 已有（路线3 profile/代理/账号管理）"
   elif [ -n "${ROXY_API_KEY:-}" ]; then
-    claude mcp add --scope user roxybrowser -e "ROXY_API_KEY=$ROXY_API_KEY" -e "ROXY_API_HOST=${ROXY_API_HOST:-http://127.0.0.1:50007}" -e "ROXY_TIMEOUT=30000" -- npx -y @roxybrowser/openapi >/dev/null 2>&1 \
+    claude mcp add --scope user roxybrowser -e "ROXY_API_KEY=$ROXY_API_KEY" -e "ROXY_API_HOST=${ROXY_API_HOST:-http://127.0.0.1:50000}" -e "ROXY_TIMEOUT=30000" -- npx -y @roxybrowser/openapi >/dev/null 2>&1 \
       && echo "  ✅ roxybrowser" || echo "  ❌ roxybrowser 添加失败"
   else
     echo "  ⚠️  roxybrowser 没装：需要 API Key。RoxyBrowser 客户端 → API → 启用 → 复制 Key，然后："
-    echo "      ROXY_API_KEY=你的Key bash $SRC/install.sh   （端口不是 50007 就再加 ROXY_API_HOST=http://127.0.0.1:端口）"
+    echo "      ROXY_API_KEY=你的Key bash $SRC/install.sh   （端口不是 50000 就再加 ROXY_API_HOST=http://127.0.0.1:端口）"
   fi
 fi
 
