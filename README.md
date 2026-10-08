@@ -23,7 +23,7 @@ newrev --android 项目名 com.package.name # Android
 
 **已有项目里接入**：cd 进项目目录，`newrev --here [--ios|--android] [URL]`
 
-**懒得记命令**：直接跟 agent 说「看 `~/Desktop/有用/逆向`」——入口文档（CLAUDE.md / AGENTS.md）定义了标准流程：体检（缺才补）→ 判断平台 → 套模版 → 开工。
+**懒得记命令**：直接把本仓库路径发给 agent，说「看这个文件夹」（位置不固定，clone 到哪都行）——入口文档（CLAUDE.md / AGENTS.md）定义了标准流程：体检（缺才补）→ 判断平台 → 套模版 → 开工。
 
 建好的项目长这样：`CLAUDE.md`（规则本体：协议优先/Phase 0-4/Phase 3 确认门槛/止损）+ `AGENTS.md`（薄壳）+ `.venv` + 目录骨架（web 用 `sites/`，移动端用 `projects/`）+ **项目级 agent 配置**：`.agents/skills/`（平台子集软链，Codex/ZCode 项目内入口）、`.zcode/`（config.json servers 保持空，memory/ 项目记忆）、`.codex/config.toml`（保持空，防分叉）。
 

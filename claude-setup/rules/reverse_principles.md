@@ -1,6 +1,6 @@
 # 逆向准则 v2 —— 操作规范（2026-08-14 定稿）
 
-> 真源（本机）：逆向工具链 `claude-setup/rules/`（Mac 为 `~/Desktop/有用/逆向/claude-setup/rules/`，服务器为 `~/.claude/reverse-toolchain/rules/`；老师原版源自其 Windows 仓库）。安装副本：`~/.claude/reverse_principles.md`。修改只改真源再重装同步。领域附录：`reverse_signature_principles.md`（签名参数①②③三分类/软硬件分界/VMP硬啃纪律）。
+> 真源（本机）：逆向工具链 `claude-setup/rules/`（即 `<仓库>/claude-setup/rules/`，服务器为 `~/.claude/reverse-toolchain/rules/`；老师原版源自其 Windows 仓库）。安装副本：`~/.claude/reverse_principles.md`。修改只改真源再重装同步。领域附录：`reverse_signature_principles.md`（签名参数①②③三分类/软硬件分界/VMP硬啃纪律）。
 > 定调：想方设法绕过一切阻拦，解除一切障碍，直到找到心里的那一个她。本文件是执行规范，不是哲学文章——任何 AI / 人，零上下文，在任何决策点都能查到"此刻该做什么、禁说什么"，每条可判定遵守/违反。
 
 ## 0. 适用范围（先分层，防本文件自身模板化）

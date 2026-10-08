@@ -20,7 +20,7 @@
 
 8. **老师环境 ≠ 本机**：其 SKILL.md / .mcp.json / CLAUDE.md 里的 `E:\`、`C:\Users`、AdsPower、`ios-device`/`frida-orchestrator`/`reverse-index`/`algo-lab`（自建 MCP，从未随包分发）、设备 UDID/serial、27045 端口、`inject_before_load`/`trace_function`（其私改 js-reverse-mcp 的工具，npm 版没有）——一律按维护注替代方案执行；配置文件永不照抄。
 9. **老师包不带 MCP**：包内 EXTERNAL_DEPENDENCIES.md 明说自建 MCP 未分发。到货后按 `_meta/20260920/待办-老师MCP到货接入指引.md` 接。
-10. **路径迁移**：仓库已从 `~/Desktop/逆向` 挪到 `~/Desktop/有用/逆向`（用户手动挪的）——文档/脚本里引用路径时以 `claude-setup` 相对结构为准，别写死上层路径（skill 内部用 `<仓库>` 占位）。
+10. **路径不固定**：仓库挪过多次（`~/Desktop/逆向` → `~/Desktop/有用/逆向` → 现名 ReverserENV，远程 GitHub `Hsiangpo/ReverserENV`），换机器 clone 到哪都行——文档/脚本里引用路径时以 `claude-setup` 相对结构为准，别写死上层路径（skill 内部用 `<仓库>` 占位）。
 
 11. **CloakBrowser 桌面图标**：Mac 上 `~/Desktop/Cloak浏览器.app`（osacompile 做的 AppleScript，9223 专用端口，9222 被 js-reverse MCP 常占）。重装系统要重做。
 

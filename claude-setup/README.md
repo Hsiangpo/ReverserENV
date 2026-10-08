@@ -4,7 +4,7 @@
 
 ```
 安装副本 ~/.claude/reverse-toolchain/   skills / templates / bin 的拷贝（源目录搬走不影响）
-全局 ~/.claude/skills/ 等 3 处           17 个 skill（软链到上面的副本；~/.claude/skills、~/.zcode/skills、~/.codex/skills 三平台同步）
+项目 .claude/skills/（newrev 挂载）     17 个 skill（默认项目级；--global-skills 才软链进 ~/.claude|~/.zcode|~/.codex/skills）
 全局 ~/.claude.json mcpServers          10 个：js-reverse / js-reverse-cloak / roxybrowser / roxybrowser-playwright / chrome-devtools /
                                         wiremcp / reqable / jadx / frida-agent / wedecode
 vendor ~/.claude/reverse-toolchain/vendor/   WireMCP / jdk-21 / jadx（+ jadx-ai-mcp 插件）/ jadx-mcp-server / wedecode
@@ -17,7 +17,7 @@ vendor ~/.claude/reverse-toolchain/vendor/   WireMCP / jdk-21 / jadx（+ jadx-ai
 
 **为什么这么分：**
 
-- **Skills 全局** —— 它们是「能力」，装了不用也不会乱插手。代价是 17 个 frontmatter 约 **2.4k tokens 常驻每个会话**，用户拍板接受。
+- **Skills 默认项目级**（20260922 起）—— 全局挂载会让 17 个 frontmatter 约 **2.4k tokens 常驻每个会话**，且逆向措辞会让业务会话被 [cyber] 分类降级；所以默认只在逆向项目里由 `newrev` 挂载。确实要全局时 `--global-skills`。
 - **MCP 全部全局** —— `js-reverse-mcp` 的浏览器是**第一次调工具时才启动**（`getContext()` 懒加载），会话开始只有一个 node 进程，所以全局放着没负担。工具 schema 也是按需加载的。
 - **规则 CLAUDE.md 不进全局** —— 314 行强约束（禁止 Selenium、必须过 Phase 3 确认），塞进全局会让写普通脚本的会话也被管住。`newrev` 会把它复制进项目；不建项目时用户把本目录路径发给 agent，agent 按根目录 `CLAUDE.md` 的指引去读。
 - **全局配置里不写死本目录路径** —— 用户会把这个文件夹放到不同位置、不同机器。所以安装是「复制到 `~/.claude/reverse-toolchain/`」而不是软链回源目录，装完源目录可以搬走。
@@ -28,7 +28,7 @@ vendor ~/.claude/reverse-toolchain/vendor/   WireMCP / jdk-21 / jadx（+ jadx-ai
 bash "<本目录>/install.sh"
 ```
 
-一条命令做完：检查依赖（缺 `uv` 会自动装）→ 复制 `skills/templates/bin` 到 `~/.claude/reverse-toolchain/` → 软链 17 个 skill 到三平台目录 → 挂载全局逆向准则（`~/.claude/CLAUDE.md` @include + `~/.codex/AGENTS.md` 内联，真源 `rules/`）→ 软链 `newrev` → 拉 WireMCP → 预下载 CloakBrowser 二进制 → `npm i -g wabt` → 装 Reqable 免费版到 `/Applications` → 下 JDK 21 + jadx + jadx-ai-mcp 插件 + python server → `uv tool install` frida-tools / frida-mcp → clone + build wedecode → `claude mcp add --scope user` 注册 10 个 MCP。幂等，已有的跳过，**重跑 = 更新**。
+一条命令做完：检查依赖（缺 `uv` 会自动装）→ 复制 `skills/templates/bin` 到 `~/.claude/reverse-toolchain/` → skills 默认项目级（`--global-skills` 才软链三平台）→ 逆向准则：Claude 由仓库 CLAUDE.md 相对导入（`--global-rules` 才挂全局），Codex 内联 `~/.codex/AGENTS.md`（真源 `rules/`）→ 软链 `newrev` → 拉 WireMCP → 预下载 CloakBrowser 二进制 → `npm i -g wabt` → 装 Reqable 免费版到 `/Applications` → 下 JDK 21 + jadx + jadx-ai-mcp 插件 + python server → `uv tool install` frida-tools / frida-mcp → clone + build wedecode → `claude mcp add --scope user` 注册 MCP（含 adb + 安卓三件套，原包在时）。幂等，已有的跳过，**重跑 = 更新**。
 
 大文件合计约 450MB（CloakBrowser 150 / JDK 200 / jadx 70 / Reqable 33）。只想要 Web 核心、不要 App/小程序那些：
 
@@ -46,14 +46,14 @@ ROXY_API_KEY=你的Key bash "<本目录>/install.sh"
 
 端口以客户端 API 页显示为准（默认 50000，不同就再加 `ROXY_API_HOST=http://127.0.0.1:端口`）。
 
-### 省 context 的模式
+### 全局模式（可选，默认不开）
 
 ```bash
-bash "<本目录>/install.sh" --no-global-skills
+bash "<本目录>/install.sh" --global-skills --global-rules
 ```
 
-skills 不进全局，改由 `newrev` 在每个新项目里软链到 `./.claude/skills/`。
-**你的操作步骤完全一样**（还是 `newrev` 一条命令），区别只是非逆向项目不再吃那 2.4k tokens。
+默认 skills 不进全局，由 `newrev` 在每个新项目里软链到 `./.claude/skills/`；准则由本仓库 CLAUDE.md 相对导入。
+上面两个开关才把它们挂进全局（代价：每个会话常驻 2.4k tokens，且业务会话也会带上逆向准则）。
 
 `newrev` 会自动判断：`~/.claude/skills/web-reverse-master` 存在就用全局的，不存在就链进项目，不会重复加载。
 

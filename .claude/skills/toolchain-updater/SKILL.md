@@ -11,7 +11,7 @@ description: >-
 ```
 claude-setup/（源，改这里）
   → ~/.claude/reverse-toolchain/（live 实体，install.sh 复制）
-    → ~/.claude/skills、~/.codex/skills、~/.zcode/skills（三平台软链，指向 live）
+    → 项目 .claude/skills（newrev 挂载，默认）／ 或 --global-skills 时 ~/.claude|~/.codex|~/.zcode/skills 三平台软链（指向 live）
 ```
 
 铁律：**一切改动从源开始向下同步；任何时刻 `diff -rq 源/skills live/skills` 必须零差异**；老师 Windows 环境的路径/工具/设备信息永不照抄（见维护注）。

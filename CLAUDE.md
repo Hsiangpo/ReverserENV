@@ -11,7 +11,7 @@
 bash "<本目录>/claude-setup/install.sh"
 ```
 
-它会：把 skills / templates / newrev 复制到 `~/.claude/reverse-toolchain/` → 17 个 skill 软链到 `~/.claude/skills/`、`~/.zcode/skills/`、`~/.codex/skills/` 三平台（20260920 内部版：web 6 + 安卓 6 + iOS 5）→ 全局逆向准则挂载（`~/.claude/CLAUDE.md` @include + `~/.codex/AGENTS.md` 内联，真源 `claude-setup/rules/`）→ `newrev` 软链到 `~/.local/bin/` → 下载并装好全部免费依赖（CloakBrowser 二进制、Reqable 免费版、JDK 21 + jadx + 插件、frida、wedecode、wabt，约 450MB；`--skip-downloads` 跳过大文件，`--core-only` 只装 Web 核心）→ 用 `claude mcp add --scope user` 注册 9 个 MCP（`js-reverse` / `js-reverse-cloak` / `roxybrowser-playwright` / `chrome-devtools` / `wiremcp` / `reqable` / `jadx` / `frida-agent` / `wedecode`；加需 API Key 的 `roxybrowser` 共 10 个）。
+它会：把 skills / templates / newrev 复制到 `~/.claude/reverse-toolchain/` → 17 个 skill（20260920 内部版：web 6 + 安卓 6 + iOS 5）**默认项目级**：不进全局，由 `newrev` 按项目挂载（`--global-skills` 才软链进三平台全局）→ 逆向准则：Claude 由本仓库 CLAUDE.md 相对导入、只在逆向会话生效（`--global-rules` 才写 `~/.claude/CLAUDE.md`），Codex 内联进 `~/.codex/AGENTS.md`（真源 `claude-setup/rules/`）→ `newrev` 软链到 `~/.local/bin/` → 下载并装好全部免费依赖（CloakBrowser 二进制、Reqable 免费版、JDK 21 + jadx + 插件、frida、wedecode、wabt，约 450MB；`--skip-downloads` 跳过大文件，`--core-only` 只装 Web 核心）→ 用 `claude mcp add --scope user` 注册 MCP（`js-reverse` / `js-reverse-cloak` / `roxybrowser-playwright` / `chrome-devtools` / `wiremcp` / `reqable` / `jadx` / `frida-agent` / `wedecode`，安卓三件套就绪时再加 `frida-orchestrator-mcp` / `reverse-index-mcp` / `algo-lab-mcp`；`roxybrowser` 需 API Key）。
 
 跑完看输出：
 
@@ -47,3 +47,11 @@ bash "<本目录>/claude-setup/install.sh"
 - RoxyBrowser 的工具名是 `roxy_profile_*` / `roxy_proxy_*` / `roxy_platform_account_*`；`roxy_list_browsers` / `roxy_open_browsers` / `roxy_health_check` 这套**不存在**，别从记忆里编。
 
 详细说明看 `README.md` 和 `claude-setup/README.md`。
+
+## 逆向准则（本仓库就近挂载，替代原全局挂载）
+
+> 这两条准则原由 `install.sh` 写进 `~/.claude/CLAUDE.md` 全局生效；为避免业务/发布/元会话被 [cyber] 分类降级，改为仅在本仓库目录下的会话导入。用相对路径随文件夹移动，不写死绝对路径。
+
+@claude-setup/rules/reverse_principles.md
+
+@claude-setup/rules/reverse_signature_principles.md

@@ -2,8 +2,9 @@
 # 一条命令装齐逆向工具链：17 个 skill + newrev + 10 个 MCP + 它们依赖的免费软件。幂等，重跑 = 更新。
 #
 # 用法（本文件放哪都行，路径不写死）：
-#   bash <本目录>/install.sh                      全部装
-#   bash <本目录>/install.sh --no-global-skills   skills 不进全局，由 newrev 按项目软链
+#   bash <本目录>/install.sh                      全部装（skills/准则默认项目级：不进全局）
+#   bash <本目录>/install.sh --global-skills      额外把 17 个 skill 软链进 ~/.claude|~/.codex|~/.zcode/skills
+#   bash <本目录>/install.sh --global-rules       额外把逆向准则挂进 ~/.claude/CLAUDE.md（会让非逆向会话也带上准则）
 #   bash <本目录>/install.sh --skip-downloads     跳过大文件（CloakBrowser 150MB / JDK 200MB / jadx 70MB / Reqable 33MB）
 #   bash <本目录>/install.sh --core-only          只装 Web 逆向核心（js-reverse×2 / Roxy×2 / chrome-devtools / wiremcp），跳过 App/小程序那些扩展 MCP
 #   ROXY_API_KEY=xxx bash install.sh             顺带把 RoxyBrowser 的 Key 配进去
@@ -11,13 +12,15 @@
 # 装完后本目录可以搬走/删掉：所有东西都在 ~/.claude/reverse-toolchain/ 和 ~/.local/
 set -euo pipefail
 
-GLOBAL_SKILLS=1; SKIP_DOWNLOADS=0; CORE_ONLY=0
+GLOBAL_SKILLS=0; GLOBAL_RULES=0; SKIP_DOWNLOADS=0; CORE_ONLY=0
 for a in "$@"; do
   case "$a" in
-    --no-global-skills) GLOBAL_SKILLS=0 ;;
+    --global-skills)    GLOBAL_SKILLS=1 ;;
+    --no-global-skills) GLOBAL_SKILLS=0 ;;   # 兼容旧参数（现在本来就是默认）
+    --global-rules)     GLOBAL_RULES=1 ;;
     --skip-downloads)   SKIP_DOWNLOADS=1 ;;
     --core-only)        CORE_ONLY=1 ;;
-    -h|--help) sed -n '2,11p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,13p' "$0"; exit 0 ;;
     *) echo "未知参数: ${a}（用 --help 看用法）"; exit 1 ;;
   esac
 done
@@ -96,7 +99,7 @@ chmod +x "$DST/bin/newrev"
 
 # ---------- 3. skills（Claude Code / ZCode / Codex 三平台软链，都指向同一份实体）----------
 if [ "$GLOBAL_SKILLS" -eq 0 ]; then
-  echo; echo "==> 跳过全局 skills（--no-global-skills），newrev 会按项目软链"
+  echo; echo "==> skills 项目级（默认）：不进全局，newrev 按项目软链；要全局加 --global-skills"
 else
   for SKILLS_DST in "$HOME/.claude/skills" "$HOME/.zcode/skills" "$HOME/.codex/skills"; do
     echo; echo "==> skills → $SKILLS_DST"
@@ -120,18 +123,24 @@ case ":$PATH:" in *":$BIN_DST:"*) ;; *)
   echo "      echo 'export PATH=\"\$HOME/.local/bin:\$PATH\"' >> ~/.zshrc && source ~/.zshrc" ;;
 esac
 
-# ---------- 4.5 全局逆向准则（何老师内部版） ----------
-echo; echo "==> 全局逆向准则（~/.claude/CLAUDE.md @include + ~/.codex/AGENTS.md 内联）"
+# ---------- 4.5 逆向准则（何老师内部版） ----------
+# Claude：默认项目级——仓库根 CLAUDE.md 相对 @import claude-setup/rules/，只在逆向会话生效（避免业务会话被 [cyber] 分类降级）。
+# Codex：无 @import，维持内联进 ~/.codex/AGENTS.md。
+echo; echo "==> 逆向准则"
 RR="$DST/rules"
 [ -d "$RR" ] || RR="$SRC/rules"
 if [ -d "$RR" ] && [ -f "$RR/reverse_principles.md" ]; then
-  cp "$RR/reverse_principles.md" "$RR/reverse_signature_principles.md" "$HOME/.claude/"
   CL="$HOME/.claude/CLAUDE.md"
-  if ! grep -q "@reverse_principles.md" "$CL" 2>/dev/null; then
-    [ -f "$CL" ] || printf '# Claude Code 全局指令\n' > "$CL"
-    printf '\n## 逆向准则（何老师内部版，全局生效）\n\n@reverse_principles.md\n\n@reverse_signature_principles.md\n\n<!-- cloak_kernel_sync.md：老师明确不要配置（其 Windows 内核同步规则，不适用本机）；仅归档于 _meta/20260920/参考/ -->\n' >> "$CL"
-    echo "  ✅ ~/.claude/CLAUDE.md 已挂载 @include"
-  else echo "  ✔︎ 已有"; fi
+  if [ "$GLOBAL_RULES" -eq 1 ]; then
+    cp "$RR/reverse_principles.md" "$RR/reverse_signature_principles.md" "$HOME/.claude/"
+    if ! grep -q "^@reverse_principles.md" "$CL" 2>/dev/null; then
+      [ -f "$CL" ] || printf '# Claude Code 全局指令\n' > "$CL"
+      printf '\n## 逆向准则（何老师内部版，全局生效）\n\n@reverse_principles.md\n\n@reverse_signature_principles.md\n' >> "$CL"
+      echo "  ✅ ~/.claude/CLAUDE.md 已挂载 @include（--global-rules）"
+    else echo "  ✔︎ ~/.claude/CLAUDE.md 已有"; fi
+  else
+    echo "  ✔︎ Claude 项目级：仓库 CLAUDE.md 相对导入，不写 ~/.claude/CLAUDE.md（要全局加 --global-rules）"
+  fi
   AG="$HOME/.codex/AGENTS.md"
   if ! grep -q "逆向准则（何老师内部版" "$AG" 2>/dev/null; then
     [ -f "$AG" ] || printf '# 全局指令\n' > "$AG"
@@ -234,7 +243,8 @@ fi
 # ---------- 10. frida ----------
 echo; echo "==> frida（手机动态插桩）"
 # frida-mcp 还在用 mcp 1.x 的 FastMCP API，必须钉 mcp<2，否则起不来
-if [ -x "$BIN_DST/frida-mcp" ] && "$BIN_DST/frida-mcp" --help >/dev/null 2>&1; then echo "  ✔︎ frida-mcp 已有"
+# 检测别用 `frida-mcp --help`：它不认 --help，会直接起 stdio 服务等输入，install.sh 永远卡住
+if [ -x "$BIN_DST/frida-mcp" ] && uv tool list 2>/dev/null | grep -q '^frida-mcp '; then echo "  ✔︎ frida-mcp 已有"
 else uv tool install --python 3.12 --force --with 'mcp<2' frida-mcp >/dev/null 2>&1 && echo "  ✅ frida-mcp" || echo "  ❌ frida-mcp 装失败"; fi
 command -v frida >/dev/null 2>&1 && echo "  ✔︎ frida-tools $(frida --version 2>/dev/null)" \
   || { uv tool install --python 3.12 frida-tools >/dev/null 2>&1 && echo "  ✅ frida-tools $(frida --version 2>/dev/null)" || echo "  ❌ frida-tools 装失败"; }

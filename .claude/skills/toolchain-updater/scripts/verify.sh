@@ -17,27 +17,25 @@ for d in skills rules bin templates; do
   if diff -rq "$SRC/$d" "$LIVE/$d" >/dev/null 2>&1; then ok "$d 零差异"; else bad "${d} 有差异（diff -rq ${SRC}/${d} ${LIVE}/${d}）"; fi
 done
 
-echo "═══ 2. 三平台 skills 软链（自适应：全局模式 或 项目级模式） ═══"
-EXPECT=$(ls "$SRC/skills" | wc -l | tr -d ' ')
+echo "═══ 2. 三平台 skills 软链（自适应：项目级 或 --global-skills 全局） ═══"
+# 只数本工具链自己的 skill 名；全局目录里 superpowers 等插件 skill 与本仓库无关
+NAMES=$(ls "$SRC/skills")
+EXPECT=$(echo "$NAMES" | wc -l | tr -d ' ')
+count_ours() {
+  local n=0 s
+  for s in $NAMES; do [ -f "$1/$s/SKILL.md" ] && n=$((n+1)); done
+  echo "$n"
+}
 GLOBAL_N=0
 for pdir in "$HOME/.claude/skills" "$HOME/.codex/skills" "$HOME/.zcode/skills"; do
-  n=0
-  for l in "$pdir"/*/; do
-    s=$(basename "$l"); [ "$s" = ".system" ] && continue
-    [ -f "$l/SKILL.md" ] && n=$((n+1))
-  done
-  GLOBAL_N=$((GLOBAL_N + n))
+  GLOBAL_N=$((GLOBAL_N + $(count_ours "$pdir")))
 done
 if [ "$GLOBAL_N" -eq 0 ]; then
-  ok "项目级模式（全局未挂载，本机 20260922 起策略；实体在 live+源）"
+  ok "项目级模式（全局无本工具链 skill；实体在 live+源，newrev 按项目挂载）"
 else
   for pdir in "$HOME/.claude/skills" "$HOME/.codex/skills" "$HOME/.zcode/skills"; do
-    n=0
-    for l in "$pdir"/*/; do
-      s=$(basename "$l"); [ "$s" = ".system" ] && continue
-      [ -f "$l/SKILL.md" ] && n=$((n+1))
-    done
-    if [ "$n" = "$EXPECT" ]; then ok "${pdir}（${n}/${EXPECT}）"; else bad "${pdir} 计数不符（${n}/${EXPECT}）"; fi
+    n=$(count_ours "$pdir")
+    if [ "$n" = "$EXPECT" ]; then ok "${pdir}（${n}/${EXPECT}）"; else bad "${pdir} 半挂载（${n}/${EXPECT}）：重跑 install.sh --global-skills 补齐，或删掉残留软链回到项目级"; fi
   done
 fi
 
@@ -54,10 +52,13 @@ for f in "$SRC/install.sh" "$SRC/bin/newrev"; do
   else ok "$(basename "$f") 干净"; fi
 done
 
-echo "═══ 5. 全局准则挂载 ═══"
-if grep -q "@reverse_principles.md" "$HOME/.claude/CLAUDE.md" 2>/dev/null && [ -f "$HOME/.claude/reverse_principles.md" ]; then
-  ok "~/.claude/CLAUDE.md @include + 附件"
-else bad "~/.claude/CLAUDE.md 准则未挂载或附件缺失"; fi
+echo "═══ 5. 逆向准则挂载（Claude：项目级相对导入 或 --global-rules；Codex：内联） ═══"
+if grep -q "^@claude-setup/rules/reverse_principles.md" "$REPO/CLAUDE.md" 2>/dev/null \
+   && grep -q "^@claude-setup/rules/reverse_signature_principles.md" "$REPO/CLAUDE.md" 2>/dev/null; then
+  ok "Claude 项目级：仓库 CLAUDE.md 相对导入两份准则"
+elif grep -q "^@reverse_principles.md" "$HOME/.claude/CLAUDE.md" 2>/dev/null && [ -f "$HOME/.claude/reverse_principles.md" ]; then
+  ok "Claude 全局：~/.claude/CLAUDE.md @include + 附件"
+else bad "Claude 准则未挂载（仓库 CLAUDE.md 缺相对导入，全局也没有）"; fi
 if grep -q "逆向准则" "$HOME/.codex/AGENTS.md" 2>/dev/null; then ok "~/.codex/AGENTS.md 内联"; else bad "~/.codex/AGENTS.md 缺准则"; fi
 
 echo "═══ 5.5 可移植性：仓库内无本机绝对路径 ═══"
